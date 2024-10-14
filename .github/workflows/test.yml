@@ -28,7 +28,7 @@ jobs:
             name: weaviate
           provisioner: rancher.io/local-path
           reclaimPolicy: Delete
-          volumeBindingMode: Immediate
+          volumeBindingMode: WaitForFirstConsumer
           EOF
           kubectl apply -f storageclass.yaml 
           rm storageclass.yaml
