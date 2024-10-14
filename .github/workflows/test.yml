@@ -51,4 +51,4 @@ jobs:
           kubectl get nodes 
           kubectl -n explorer get events
           kubectl -n explorer get all
-          kubectl -n explorer logs -f explorer
+          kubectl -n explorer logs -f service/explorer
