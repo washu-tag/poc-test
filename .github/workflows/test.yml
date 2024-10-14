@@ -35,7 +35,7 @@ jobs:
           --from-literal=azure-assistant-mini='assistant id'
           cd helm/ctclip
           helm upgrade --install -n ctclip ctclip . \
-          --set huggingface.token=<your token> \
+          --set huggingface.token=TODO \
           --set resources.requests.memory=24000Mi \
           --set resources.requests.cpu=2
           cd -
