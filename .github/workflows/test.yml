@@ -20,3 +20,16 @@ jobs:
 
           helm version
           helm list
+
+      - name: Deploy application for test
+        run: |
+          kubectl create namespace explorer
+          kubectl -n explorer create secret generic ai-keys \
+          --from-literal=google='your key' \
+          --from-literal=azure='your key' \
+          --from-literal=azure-resource='resource' \
+          --from-literal=azure-assistant='assistant id' \
+          --from-literal=azure-assistant-mini='assistant id'
+          cd helm/explorer && helm upgrade --install -n explorer explorer . \
+          --set resources.requests.memory=4000Mi \
+          --set resources.requests.cpu=2
