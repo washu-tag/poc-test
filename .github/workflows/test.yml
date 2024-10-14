@@ -46,10 +46,21 @@ jobs:
           --set resources.requests.memory=4000Mi \
           --set resources.requests.cpu=2
           #for attempt in {1..300}; do sleep 1; if curl http://localhost/ -v --fail-with-body; then echo "App seems to be up"; break; fi; echo "waiting for app..."; done
-          sleep 30
-          kubectl describe nodes
-          kubectl config current-context
-          kubectl get nodes 
-          kubectl -n explorer get events
-          kubectl -n explorer get all
-          kubectl -n explorer logs -f service/explorer
+          sleep 10
+      - name: kubectl describe nodes
+        run: kubectl describe nodes
+      
+      - name: kubectl config current-context
+        run: kubectl config current-context
+
+      - name: kubectl get nodes
+        run: kubectl get nodes
+
+      - name: kubectl -n explorer get events
+        run: kubectl -n explorer get events
+
+      - name: kubectl -n explorer get all
+        run: kubectl -n explorer get all
+
+      - name: kubectl -n explorer logs -f service/explorer
+        run: kubectl -n explorer logs -f service/explorer
