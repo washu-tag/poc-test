@@ -12,6 +12,8 @@ jobs:
         with:
           k3s-channel: latest
 
+      - uses: actions/checkout@v4.2.1
+
       - name: Verify function of k8s, kubectl, and helm
         run: |
           echo "kubeconfig: $KUBECONFIG"
