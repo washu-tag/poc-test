@@ -1,4 +1,4 @@
-name: Example workflow
+name: Deploy test server and run tests
 
 on:
   push:
@@ -14,39 +14,56 @@ jobs:
 
       - uses: actions/checkout@v4.2.1
 
-      - name: Verify function of k8s, kubectl, and helm
-        run: |
-          echo "kubeconfig: $KUBECONFIG"
-          kubectl version
-          kubectl get pods --all-namespaces
-
-          helm version
-          helm list
-
-      - name: Deploy application for test
+      - name: Create k8s namespaces
         run: |
           kubectl create namespace explorer
           kubectl create namespace ctclip
+
+      - name: Create storage class
+        run: |
+          cat>storageclass.yaml << EOF
+          apiVersion: storage.k8s.io/v1
+          kind: StorageClass
+          metadata:
+            name: weaviate
+          provisioner: docker.io/hostpath
+          reclaimPolicy: Delete
+          volumeBindingMode: Immediate
+          EOF
+          kubectl apply -f storageclass.yaml 
+          rm storageclass.yaml
+          
+      - name: Set up secrets
+        run: |
           kubectl -n explorer create secret generic ai-keys \
           --from-literal=google='your key' \
           --from-literal=azure='your key' \
           --from-literal=azure-resource='resource' \
           --from-literal=azure-assistant='assistant id' \
           --from-literal=azure-assistant-mini='assistant id'
+      - name: Deploy CTCLIP
+        run: |
           cd helm/ctclip
           #helm upgrade --install -n ctclip ctclip . \
           #--set huggingface.token=TODO \
           #--set resources.requests.memory=24000Mi \
           #--set resources.requests.cpu=2
           cd -
+
+      - name: Deploy explorer
+        run: |
           cd helm/explorer
           helm repo add weaviate https://weaviate.github.io/weaviate-helm
           helm dependency build
           helm upgrade --install -n explorer explorer . \
           --set resources.requests.memory=1000Mi \
           --set resources.requests.cpu=1
+
+      - name: Wait for app startup
+        run: |
           #for attempt in {1..300}; do sleep 1; if curl http://localhost/ -v --fail-with-body; then echo "App seems to be up"; break; fi; echo "waiting for app..."; done
           sleep 10
+
       - name: kubectl describe nodes
         run: kubectl describe nodes
       
