@@ -40,7 +40,7 @@ jobs:
           --set resources.requests.cpu=2
           cd -
           cd helm/explorer
-          helm repo add
+          helm repo add weaviate https://weaviate.github.io/weaviate-helm
           helm dependency build
           helm upgrade --install -n explorer explorer . \
           --set resources.requests.memory=4000Mi \
