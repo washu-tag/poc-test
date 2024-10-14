@@ -1,0 +1,236 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 90%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 10% 3.9%;
+    --radius: 0.5rem;
+    --accent-dark: 240 4.5% 80%;
+    --secondary-dark: 240 4.5% 80%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 20%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
+}
+
+@layer components {
+  .bg-background {
+    background-color: hsl(var(--background));
+  }
+
+  .text-foreground {
+    color: hsl(var(--foreground));
+  }
+
+  .border-border {
+    border-color: hsl(var(--border));
+  }
+
+  .bg-primary {
+    background-color: hsl(var(--primary));
+  }
+
+  .bg-secondary {
+    background-color: hsl(var(--secondary));
+  }
+
+  .bg-muted {
+    background-color: hsl(var(--muted));
+  }
+
+  .bg-accent {
+    background-color: hsl(var(--accent));
+  }
+
+  .bg-accent-dark {
+    background-color: hsl(var(--accent-dark));
+  }
+
+  .bg-destructive {
+    background-color: hsl(var(--destructive));
+  }
+
+  .text-primary {
+    color: hsl(var(--primary-foreground));
+  }
+
+  .text-secondary {
+    color: hsl(var(--secondary-foreground));
+  }
+
+  .text-muted {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .text-accent {
+    color: hsl(var(--accent-foreground));
+  }
+
+  .text-destructive {
+    color: hsl(var(--destructive-foreground));
+  }
+
+  .rounded {
+    border-radius: var(--radius);
+  }
+
+  .ring {
+    box-shadow: 0 0 0 2px hsl(var(--ring));
+  }
+
+  .focus:ring-accent {
+    @apply ring-2;
+  }
+
+  :disabled {
+    @apply cursor-not-allowed bg-muted text-muted;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  .form-container {
+    @apply w-full max-w-2xl p-4 mb-4 border border-border rounded-lg shadow-lg bg-white flex flex-col items-center;
+  }
+
+  .btn {
+    @apply p-2 bg-accent text-accent rounded-lg cursor-pointer;
+  }
+
+  .btn:hover {
+    @apply bg-accent-dark;
+  }
+
+  .input-text {
+    @apply flex-grow p-2 mx-2 border border-border rounded-lg;
+  }
+
+  .message-wrapper {
+    @apply flex items-start m-4;
+  }
+
+  .message-user-wrapper {
+    @apply flex-row-reverse;
+  }
+
+  .message-ai-wrapper {
+    @apply flex-row;
+  }
+
+  .message {
+    @apply p-4 rounded-lg shadow-md max-w-[calc(100%-3rem)] break-words;
+  }
+
+  .message-tool {
+    @apply text-gray-400 uppercase text-sm items-center;
+  }
+
+  .message-user {
+    @apply bg-primary text-primary self-end;
+  }
+
+  .message-user .prose {
+    @apply text-primary;
+  }
+
+  .message-ai {
+    @apply bg-secondary text-secondary self-start w-fit prose;
+  }
+
+  .message-icon {
+    @apply w-10 h-10 p-1 rounded-full flex-shrink-0 flex items-center justify-center;
+  }
+
+  .message-user-wrapper .message-icon {
+    @apply ml-3;
+  }
+
+  .message-ai-wrapper .message-icon {
+    @apply mr-3;
+  }
+
+  .message-attachments {
+    @apply mt-2;
+  }
+
+  .message-attachments img {
+    @apply max-w-full rounded;
+  }
+
+  .input-instructions {
+    @apply mb-2 text-sm text-muted;
+  }
+
+  .chat-input-container {
+    @apply flex items-center w-full;
+  }
+
+  .file-previews {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .file-preview {
+    @apply flex items-center space-x-2;
+  }
+
+  .preview-img {
+    @apply w-24 h-24 object-cover rounded border border-border;
+  }
+
+  .preview-text {
+    @apply text-muted;
+  }
+
+  .model-selector {
+    @apply fixed;
+  }
+
+  .model-select {
+    @apply w-60 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+  }
+
+  .model-select:hover {
+    @apply bg-gray-100;
+  }
+}
