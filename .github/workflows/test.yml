@@ -45,5 +45,5 @@ jobs:
           helm upgrade --install -n explorer explorer . \
           --set resources.requests.memory=4000Mi \
           --set resources.requests.cpu=2
-          for attempt in {1..300}; do sleep 1; if curl http://localhost:8080/ -v --fail-with-body; then echo "App seems to be up"; break; fi; echo "waiting for app..."; done
+          for attempt in {1..300}; do sleep 1; if curl http://localhost/ -v --fail-with-body; then echo "App seems to be up"; break; fi; echo "waiting for app..."; done
           
