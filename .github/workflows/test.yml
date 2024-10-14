@@ -26,7 +26,7 @@ jobs:
           kind: StorageClass
           metadata:
             name: weaviate
-          provisioner: docker.io/hostpath
+          provisioner: rancher.io/local-path
           reclaimPolicy: Delete
           volumeBindingMode: Immediate
           EOF
