@@ -27,6 +27,17 @@ jobs:
         run: |
           kubectl create namespace explorer
           kubectl create namespace ctclip
+          cat>storageclass.yaml << EOF
+          apiVersion: storage.k8s.io/v1
+          kind: StorageClass
+          metadata:
+          name: weaviate
+          provisioner: docker.io/hostpath
+          reclaimPolicy: Delete
+          volumeBindingMode: Immediate
+          EOF
+          kubectl apply -f storageclass.yaml 
+          rm storageclass.yaml 
           kubectl -n explorer create secret generic ai-keys \
           --from-literal=google='your key' \
           --from-literal=azure='your key' \
