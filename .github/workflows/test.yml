@@ -44,7 +44,7 @@ jobs:
           helm dependency build
           helm upgrade --install -n explorer explorer . \
           --set resources.requests.memory=1000Mi \
-          --set resources.requests.cpu=2
+          --set resources.requests.cpu=1
           #for attempt in {1..300}; do sleep 1; if curl http://localhost/ -v --fail-with-body; then echo "App seems to be up"; break; fi; echo "waiting for app..."; done
           sleep 10
       - name: kubectl describe nodes
