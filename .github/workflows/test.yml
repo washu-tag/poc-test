@@ -1,0 +1,22 @@
+name: Example workflow
+
+on:
+  push:
+
+jobs:
+  k8s-test:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Start a local k8s cluster
+        uses: jupyterhub/action-k3s-helm@v4
+        with:
+          k3s-channel: latest
+
+      - name: Verify function of k8s, kubectl, and helm
+        run: |
+          echo "kubeconfig: $KUBECONFIG"
+          kubectl version
+          kubectl get pods --all-namespaces
+
+          helm version
+          helm list
