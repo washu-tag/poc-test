@@ -6,7 +6,7 @@ properties = [
     wc.Property(name="study", data_type=wc.DataType.TEXT, description="The DICOM study label."),
 ]
 
-client = weaviate.connect_to_local(port=8080)
+client = weaviate.connect_to_local(port=8080, skip_init_checks=True)
 if not client.is_ready():
     print("Weaviate is not up!")
     exit()

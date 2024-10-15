@@ -970,12 +970,12 @@ weaviate:
     text2vec-openai:
   
       # enable if you want to use OpenAI module
-      enabled: true
+      enabled: false
   
       # Set your OpenAI API Key to be passed to Weaviate pod as
       # an environment variable. You can set either the OpenAI's Service API key
       # OR the Azure OpenAI's Service Key. Note that you cannot set both of the at the same time.
-      apiKey: 'sk-proj-aPIsHmxtMqhGFLFDnUxxT3BlbkFJOHKqKlSPRqMur6Bgt7Oj'
+      apiKey: ''
       azureApiKey: ''
   
     # The text2vec-huggingface module uses HuggingFace API
@@ -986,11 +986,11 @@ weaviate:
     text2vec-huggingface:
   
       # enable if you want to use HuggingFace module
-      enabled: true
+      enabled: false
   
       # Set your HuggingFace API Key to be passed to Weaviate pod as
       # an environment variable
-      apiKey: 'hf_eQrYOUrJQQWGdmXctiBkLKlHTXiADMtpyC'
+      apiKey: ''
   
     # The text2vec-cohere module uses Cohere API
     # to dynamically compute vector embeddings based on the
@@ -1378,12 +1378,12 @@ weaviate:
     generative-openai:
   
       # enable if you want to use OpenAI module
-      enabled: true
+      enabled: false
   
       # Set your OpenAI API Key to be passed to Weaviate pod as
       # an environment variable. You can set either the OpenAI's Service API key
       # OR the Azure OpenAI's Service Key. Note that you cannot set both of the at the same time.
-      apiKey: 'sk-proj-aPIsHmxtMqhGFLFDnUxxT3BlbkFJOHKqKlSPRqMur6Bgt7Oj'
+      apiKey: ''
       azureApiKey: ''
   
     # The generative-cohere module uses Cohere Generate API
