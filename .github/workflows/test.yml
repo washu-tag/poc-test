@@ -7,10 +7,15 @@ jobs:
   k8s-test:
     runs-on: ubuntu-22.04
     steps:
-      - name: Start a local k8s cluster
-        uses: jupyterhub/action-k3s-helm@v4
+      - uses: azure/setup-helm@v4.2.0
+        id: helm
         with:
-          k3s-channel: latest
+           version: 'latest'
+
+      - uses: debianmaster/actions-k3s@master
+        id: k3s
+        with:
+          version: 'latest'
 
       - uses: actions/checkout@v4.2.1
 
@@ -94,6 +99,9 @@ jobs:
     
       - name: kubectl -n explorer logs service/explorer
         run: kubectl -n explorer logs service/explorer
+
+      - name: kubectl -n explorer get all
+        run: kubectl -n explorer get all
 
       - name: Hit the app
         run: curl -s -o /dev/null -w "%{http_code}" http://localhost
