@@ -12,7 +12,7 @@ public class TestExample extends BaseTestCase {
                 .get("http://localhost")
                 .then()
                 .assertThat()
-                .statusCode(999);
+                .statusCode(200);
     }
 
 }
