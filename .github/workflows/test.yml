@@ -41,6 +41,7 @@ jobs:
           --from-literal=azure-resource='resource' \
           --from-literal=azure-assistant='assistant id' \
           --from-literal=azure-assistant-mini='assistant id'
+
       - name: Deploy CTCLIP
         run: |
           cd helm/ctclip
@@ -58,17 +59,10 @@ jobs:
           helm upgrade --install -n explorer explorer . \
           --set resources.requests.memory=1000Mi \
           --set resources.requests.cpu=1
-
-      - name: Wait for app startup
-        run: |
-          #for attempt in {1..300}; do sleep 1; if curl http://localhost/ -v --fail-with-body; then echo "App seems to be up"; break; fi; echo "waiting for app..."; done
-          sleep 10
+          cd -
 
       - name: kubectl describe nodes
         run: kubectl describe nodes
-      
-      - name: kubectl config current-context
-        run: kubectl config current-context
 
       - name: kubectl get nodes
         run: kubectl get nodes
@@ -79,5 +73,27 @@ jobs:
       - name: kubectl -n explorer get all
         run: kubectl -n explorer get all
 
-      - name: kubectl -n explorer logs -f service/explorer
-        run: kubectl -n explorer logs -f service/explorer
+      - name: Wait for weaviate startup
+        run: |
+          kubectl -n explorer wait --for=condition=Ready --timeout=60s pod/weaviate-0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+            python-version: '3.12'
+
+      - name: Seed weaviate db
+        run: |
+          cd tests
+          pip install -r requirements.txt
+          python seed.py
+
+      - name: Wait for app startup
+        run: |
+          kubectl -n explorer wait --for=condition=available --timeout=60s deployment/explorer
+    
+      - name: kubectl -n explorer logs service/explorer
+        run: kubectl -n explorer logs service/explorer
+
+      - name: Hit the app
+        run: curl -s -o /dev/null -w "%{http_code}" http://localhost
