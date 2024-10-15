@@ -62,8 +62,8 @@ jobs:
           helm repo add weaviate https://weaviate.github.io/weaviate-helm
           helm dependency build
           helm upgrade --install -n explorer explorer . \
-          --set resources.requests.memory=4000Mi \
-          --set resources.requests.cpu=2
+          --set resources.requests.memory=1000Mi \
+          --set resources.requests.cpu=1
           cd -
 
       - name: kubectl describe nodes
@@ -105,3 +105,6 @@ jobs:
 
       - name: Hit the app
         run: curl -s -o /dev/null -w "%{http_code}" http://localhost
+
+      - name: kubectl -n explorer logs service/explorer
+        run: kubectl -n explorer logs service/explorer
