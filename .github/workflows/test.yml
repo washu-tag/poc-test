@@ -3,8 +3,12 @@ name: Deploy test server and run tests
 on:
   push:
 
+env:
+  JAVA_DIST: 'zulu'
+  JAVA_VERSION: '21'
+
 jobs:
-  k8s-test:
+  run-tests:
     runs-on: ubuntu-22.04
     steps:
       - uses: azure/setup-helm@v4.2.0
@@ -93,6 +97,11 @@ jobs:
           pip install -r requirements.txt
           python seed.py
 
+      - uses: actions/setup-java@v4 # required by tests below, saving time by installing while app starts
+        with:
+          distribution: ${{ ENV.JAVA_DIST }}
+          java-version: ${{ ENV.JAVA_VERSION }}
+
       - name: Wait for app startup
         run: |
           kubectl -n explorer wait --for=condition=available --timeout=60s deployment/explorer
@@ -107,5 +116,8 @@ jobs:
       - name: Hit the app
         run: curl -s -o /dev/null -w "%{http_code}" http://localhost --fail-with-body
 
-      - name: kubectl -n explorer logs service/explorer
-        run: kubectl -n explorer logs service/explorer
+      - name: Run tests
+        run: |
+          cd tests
+          ./gradlew test
+
