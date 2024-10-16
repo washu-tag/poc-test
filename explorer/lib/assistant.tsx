@@ -1,8 +1,8 @@
-import AzureOpenAI from "openai";
-import { MessageContentDelta } from "openai/resources/beta/threads/messages.mjs";
-import { ToolCallDelta } from "openai/resources/beta/threads/runs/steps.mjs";
-import { tryToCloseStream } from "@/lib/utils";
-import { Chart } from "@/components/chart";
+import AzureOpenAI from 'openai';
+import { MessageContentDelta } from 'openai/resources/beta/threads/messages.mjs';
+import { ToolCallDelta } from 'openai/resources/beta/threads/runs/steps.mjs';
+import { tryToCloseStream } from '@/lib/utils';
+import { Chart } from '@/components/chart';
 
 export async function cohortInterrogation(
   assistantId: string,
@@ -21,12 +21,12 @@ export async function cohortInterrogation(
     threadId: string | undefined,
     runId: string | undefined,
     charts: string[],
-    text: string
-  ) => void
+    text: string,
+  ) => void,
 ) {
   let runId: string | undefined;
   let charts: string[] = [];
-  let text = "";
+  let text = '';
   let totalImageDownloads = 0;
   let completedImageDownloads = 0;
   let mainLoopComplete = false;
@@ -49,9 +49,7 @@ export async function cohortInterrogation(
 
   const showPreambleOnce = () => {
     if (!preambleShown) {
-      preambleTextStream.append(
-        "I am generating some code to fulfill the request.\n\n"
-      );
+      preambleTextStream.append('I am generating some code to fulfill the request.\n\n');
       preambleShown = true;
     }
   };
@@ -60,7 +58,7 @@ export async function cohortInterrogation(
     try {
       const response = await openai.files.content(fileId);
       const buffer = await response.arrayBuffer();
-      const imageSrc = `data:image/png;base64,${Buffer.from(buffer).toString("base64")}`;
+      const imageSrc = `data:image/png;base64,${Buffer.from(buffer).toString('base64')}`;
       charts.push(imageSrc);
       copilotChartStream.append(<Chart imageSrc={imageSrc} />);
     } finally {
@@ -72,43 +70,38 @@ export async function cohortInterrogation(
   const checkAndFinalizeStreams = () => {
     if (mainLoopComplete && completedImageDownloads === totalImageDownloads) {
       aiStateCallback(threadId, runId, charts, text);
-      tryToCloseStream(
-        preambleTextStream,
-        textStream,
-        codeStream,
-        copilotChartStream
-      );
-      console.log("Closed streams");
+      tryToCloseStream(preambleTextStream, textStream, codeStream, copilotChartStream);
+      console.log('Closed streams');
     }
   };
 
   try {
     const assistantMessage = {
-      role: "user" as const,
+      role: 'user' as const,
       content: question,
       attachments: fileId
-        ? [{ file_id: fileId, tools: [{ type: "code_interpreter" as const }] }]
-        : undefined
+        ? [{ file_id: fileId, tools: [{ type: 'code_interpreter' as const }] }]
+        : undefined,
     };
 
     let run;
     if (threadId) {
       await openai.beta.threads.messages.create(threadId, assistantMessage, {
-        signal
+        signal,
       });
       run = await openai.beta.threads.runs.create(
         threadId,
         { assistant_id: assistantId, stream: true },
-        { signal }
+        { signal },
       );
     } else {
       run = await openai.beta.threads.createAndRun(
         {
           assistant_id: assistantId,
           stream: true,
-          thread: { messages: [assistantMessage] }
+          thread: { messages: [assistantMessage] },
         },
-        { signal }
+        { signal },
       );
     }
 
@@ -122,58 +115,53 @@ export async function cohortInterrogation(
       const { data, event } = delta;
 
       switch (event) {
-        case "thread.created":
+        case 'thread.created':
           threadId = data.id;
           break;
-        case "thread.run.created":
+        case 'thread.run.created':
           runId = data.id;
           break;
-        case "thread.message.delta":
-          updateStatus("Generating message");
+        case 'thread.message.delta':
+          updateStatus('Generating message');
           data.delta.content?.forEach((part: MessageContentDelta) => {
-            if (part.type === "text" && part.text?.value) {
+            if (part.type === 'text' && part.text?.value) {
               appendText(part.text.value);
-            } else if (part.type === "image_file" && part.image_file?.file_id) {
+            } else if (part.type === 'image_file' && part.image_file?.file_id) {
               totalImageDownloads++;
               downloadImage(part.image_file.file_id);
             }
           });
           break;
-        case "thread.message.completed":
+        case 'thread.message.completed':
           if (hasText) {
-            appendText("\n");
+            appendText('\n');
           }
           break;
-        case "thread.run.step.delta":
-          if (data.delta.step_details?.type === "tool_calls") {
-            updateStatus("Generating code");
+        case 'thread.run.step.delta':
+          if (data.delta.step_details?.type === 'tool_calls') {
+            updateStatus('Generating code');
             showPreambleOnce();
-            data.delta.step_details.tool_calls?.forEach(
-              (tool: ToolCallDelta) => {
-                if (
-                  tool.type === "code_interpreter" &&
-                  tool.code_interpreter?.input
-                ) {
-                  appendCode(tool.code_interpreter.input);
-                }
+            data.delta.step_details.tool_calls?.forEach((tool: ToolCallDelta) => {
+              if (tool.type === 'code_interpreter' && tool.code_interpreter?.input) {
+                appendCode(tool.code_interpreter.input);
               }
-            );
+            });
           }
           break;
-        case "thread.run.step.completed":
+        case 'thread.run.step.completed':
           if (hasCode) {
-            appendCode("\n");
+            appendCode('\n');
           }
           break;
-        case "thread.run.completed":
-          updateStatus("completed");
+        case 'thread.run.completed':
+          updateStatus('completed');
           break;
         default:
           if (
-            event.endsWith("error") ||
-            event.endsWith("failed") ||
-            event.endsWith("cancelled") ||
-            event.endsWith("expired")
+            event.endsWith('error') ||
+            event.endsWith('failed') ||
+            event.endsWith('cancelled') ||
+            event.endsWith('expired')
           ) {
             throw new Error(event);
           }
@@ -183,7 +171,7 @@ export async function cohortInterrogation(
     mainLoopComplete = true;
     checkAndFinalizeStreams();
   } catch (error: any) {
-    updateStatus("Error");
+    updateStatus('Error');
     appendText(`\n\nError: ${error.message}`);
     mainLoopComplete = true;
     checkAndFinalizeStreams();

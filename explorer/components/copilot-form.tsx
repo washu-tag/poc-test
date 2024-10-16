@@ -1,6 +1,6 @@
-import React, { RefObject } from "react";
-import { FiPaperclip, FiSend, FiSquare } from "react-icons/fi";
-import { EncodedImage } from "./message";
+import React, { RefObject } from 'react';
+import { FiPaperclip, FiSend, FiSquare } from 'react-icons/fi';
+import { EncodedImage } from './message';
 
 export const CopilotForm = ({
   isExpanded,
@@ -11,7 +11,7 @@ export const CopilotForm = ({
   setInput,
   handleSubmission,
   abort,
-  textInputRef
+  textInputRef,
 }: {
   isExpanded: boolean;
   images: EncodedImage[];
@@ -24,12 +24,10 @@ export const CopilotForm = ({
   textInputRef: RefObject<HTMLInputElement>;
 }) => {
   return (
-    <div
-      className={`p-4 border-t bg-gray-100 rounded-b-lg ${isExpanded ? "" : "hidden"}`}
-    >
+    <div className={`p-4 border-t bg-gray-100 rounded-b-lg ${isExpanded ? '' : 'hidden'}`}>
       <p className="text-sm mb-2 text-gray-600">
-        Find data with the requested characteristics. If you include an image,
-        please explain how you wish to use it to inform the query.
+        Find data with the requested characteristics. If you include an image, please explain how
+        you wish to use it to inform the query.
       </p>
       {images && (
         <div className="flex flex-wrap mb-2">
@@ -45,10 +43,7 @@ export const CopilotForm = ({
         </div>
       )}
       <div className="flex items-center">
-        <label
-          className="btn mr-2 bg-blue-500 text-white rounded-full p-2"
-          title="Upload"
-        >
+        <label className="btn mr-2 bg-blue-500 text-white rounded-full p-2" title="Upload">
           <FiPaperclip />
           <input
             type="file"
@@ -67,7 +62,7 @@ export const CopilotForm = ({
           ref={textInputRef}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={(event) => {
-            if (event.key === "Enter" && input) {
+            if (event.key === 'Enter' && input) {
               handleSubmission();
             }
           }}

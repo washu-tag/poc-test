@@ -1,14 +1,5 @@
-import {
-  Comparison,
-  isString,
-  isInt,
-  isFloat
-} from "@langchain/core/structured_query";
-import {
-  WeaviateStore,
-  WeaviateTranslator,
-  WeaviateFilter
-} from "@langchain/weaviate";
+import { Comparison, isString, isInt, isFloat } from '@langchain/core/structured_query';
+import { WeaviateStore, WeaviateTranslator, WeaviateFilter } from '@langchain/weaviate';
 
 /**
  * A class that translates or converts data into a format that can be used
@@ -29,9 +20,7 @@ import {
  * );
  * ```
  */
-export class CustomWeaviateTranslator<
-  T extends WeaviateStore
-> extends WeaviateTranslator<T> {
+export class CustomWeaviateTranslator<T extends WeaviateStore> extends WeaviateTranslator<T> {
   /**
    * Visits a comparison and returns a WeaviateComparisonResult. The
    * comparison's value is checked for type and the comparator is formatted.
@@ -44,46 +33,44 @@ export class CustomWeaviateTranslator<
       return {
         path: [comparison.attribute],
         operator: super.formatFunction(comparison.comparator),
-        valueInt: parseInt(comparison.value as string, 10)
+        valueInt: parseInt(comparison.value as string, 10),
       };
     }
     if (isFloat(comparison.value)) {
       return {
         path: [comparison.attribute],
         operator: super.formatFunction(comparison.comparator),
-        valueNumber: parseFloat(comparison.value as string)
+        valueNumber: parseFloat(comparison.value as string),
       };
     }
     if (isBoolean(comparison.value)) {
       return {
         path: [comparison.attribute],
         operator: super.formatFunction(comparison.comparator),
-        valueBoolean: comparison.value
+        valueBoolean: comparison.value,
       };
     }
     if (
-      typeof comparison.value === "object" &&
-      comparison.value["type"] === "date" &&
-      comparison.value["date"]
+      typeof comparison.value === 'object' &&
+      comparison.value['type'] === 'date' &&
+      comparison.value['date']
     ) {
       // ISO 8601 timestamp, formatted as RFC3339
-      const date = new Date(comparison.value["date"] + " UTC");
+      const date = new Date(comparison.value['date'] + ' UTC');
       return {
         path: [comparison.attribute],
         operator: super.formatFunction(comparison.comparator),
-        valueDate: date.toISOString()
+        valueDate: date.toISOString(),
       };
     }
     if (isString(comparison.value)) {
       return {
         path: [comparison.attribute],
         operator: super.formatFunction(comparison.comparator),
-        valueText: comparison.value
+        valueText: comparison.value,
       };
     }
-    throw new Error(
-      `Value type of ${comparison.attribute} = ${comparison.value} is not supported`
-    );
+    throw new Error(`Value type of ${comparison.attribute} = ${comparison.value} is not supported`);
   }
   /**
    * Merges two filters into one. If both filters are empty, returns
@@ -96,21 +83,13 @@ export class CustomWeaviateTranslator<
    * @param mergeType The type of merge to perform. Can be 'and', 'or', or 'replace'. Defaults to 'and'.
    * @returns A merged WeaviateFilter, or undefined if both filters are empty.
    */
-  mergeFilters(
-    defaultFilter: WeaviateFilter,
-    generatedFilter: WeaviateFilter,
-    mergeType = "and"
-  ) {
+  mergeFilters(defaultFilter: WeaviateFilter, generatedFilter: WeaviateFilter, mergeType = 'and') {
     // the super function just merges the "where" clauses
-    let mergedFilter = super.mergeFilters(
-      defaultFilter,
-      generatedFilter,
-      mergeType
-    );
+    let mergedFilter = super.mergeFilters(defaultFilter, generatedFilter, mergeType);
     if (defaultFilter?.distance) {
-      if (typeof mergedFilter === "undefined") {
+      if (typeof mergedFilter === 'undefined') {
         mergedFilter = {
-          distance: defaultFilter?.distance
+          distance: defaultFilter?.distance,
         } as WeaviateFilter;
       } else {
         mergedFilter.distance = defaultFilter?.distance;
@@ -124,10 +103,10 @@ export class CustomWeaviateTranslator<
  * Checks if the provided value is a floating-point number.
  */
 export function isBoolean(value: any) {
-  if (typeof value === "boolean") {
+  if (typeof value === 'boolean') {
     return true;
-  } else if (typeof value === "string") {
-    return value === "true" || value === "false";
+  } else if (typeof value === 'string') {
+    return value === 'true' || value === 'false';
   }
   return false;
 }

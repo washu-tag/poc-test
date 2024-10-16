@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { RequestCohort } from "./request-form";
-import { FiShare } from "react-icons/fi";
-import { ImageRow } from "@/lib/types";
-import { useDisclosure } from "@mantine/hooks";
-import { Modal } from "@mantine/core";
+import { RequestCohort } from './request-form';
+import { FiShare } from 'react-icons/fi';
+import { ImageRow } from '@/lib/types';
+import { useDisclosure } from '@mantine/hooks';
+import { Modal } from '@mantine/core';
 
 export function ExportCohort({ data }: { data: ImageRow[] }) {
   const [opened, { open, close }] = useDisclosure(false);
@@ -23,11 +23,11 @@ export function ExportCohort({ data }: { data: ImageRow[] }) {
         onClose={close}
         overlayProps={{
           opacity: 0.55,
-          blur: 3
+          blur: 3,
         }}
         classNames={{
-          title: "font-bold text-xl",
-          header: "border-b border-gray-200"
+          title: 'font-bold text-xl',
+          header: 'border-b border-gray-200',
         }}
       >
         <RequestCohort closeModal={close} size={data.length} />

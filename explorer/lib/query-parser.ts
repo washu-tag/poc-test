@@ -1,5 +1,5 @@
-import { StructuredQueryOutputParser } from "langchain/chains/query_constructor";
-import { StructuredQuery } from "@langchain/core/structured_query";
+import { StructuredQueryOutputParser } from 'langchain/chains/query_constructor';
+import { StructuredQuery } from '@langchain/core/structured_query';
 
 export class QueryParser extends StructuredQueryOutputParser {
   constructor() {
@@ -14,10 +14,10 @@ export class QueryParser extends StructuredQueryOutputParser {
    */
   async outputProcessor({ query, filter }: { query: string; filter: string }) {
     let myQuery = query;
-    if (myQuery.length === 0 || myQuery === "NO_QUERY") {
-      myQuery = "";
+    if (myQuery.length === 0 || myQuery === 'NO_QUERY') {
+      myQuery = '';
     }
-    if (filter === "NO_FILTER" || filter === undefined) {
+    if (filter === 'NO_FILTER' || filter === undefined) {
       return new StructuredQuery(myQuery);
     } else {
       const parsedFilter = await this.queryTransformer.parse(filter);

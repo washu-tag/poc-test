@@ -1,16 +1,9 @@
-import * as uuid from "uuid";
-import type {
-  WeaviateClient,
-  WeaviateObject,
-  WhereFilter
-} from "weaviate-ts-client";
-import {
-  MaxMarginalRelevanceSearchOptions,
-  VectorStore
-} from "@langchain/core/vectorstores";
-import type { EmbeddingsInterface } from "@langchain/core/embeddings";
-import { Document } from "@langchain/core/documents";
-import { maximalMarginalRelevance } from "@langchain/core/utils/math";
+import * as uuid from 'uuid';
+import type { WeaviateClient, WeaviateObject, WhereFilter } from 'weaviate-ts-client';
+import { MaxMarginalRelevanceSearchOptions, VectorStore } from '@langchain/core/vectorstores';
+import type { EmbeddingsInterface } from '@langchain/core/embeddings';
+import { Document } from '@langchain/core/documents';
+import { maximalMarginalRelevance } from '@langchain/core/utils/math';
 
 // Copied from https://github.com/langchain-ai/langchainjs/blob/bf3db3f880286212b54c27a0db650b936a7a7148/libs/langchain-weaviate/src/vectorstores.ts
 // Modified to be able to run queries without doing a vector search
@@ -25,7 +18,7 @@ export const flattenObjectForWeaviate = (obj: Record<string, any>) => {
       continue;
     }
     const value = obj[key];
-    if (typeof obj[key] === "object" && !Array.isArray(value)) {
+    if (typeof obj[key] === 'object' && !Array.isArray(value)) {
       const recursiveResult = flattenObjectForWeaviate(value);
 
       for (const deepKey in recursiveResult) {
@@ -37,7 +30,7 @@ export const flattenObjectForWeaviate = (obj: Record<string, any>) => {
       if (value.length === 0) {
         flattenedObject[key] = value;
       } else if (
-        typeof value[0] !== "object" &&
+        typeof value[0] !== 'object' &&
         value.every((el: any) => typeof el === typeof value[0])
       ) {
         // Weaviate only supports arrays of primitive types,
@@ -100,18 +93,18 @@ export class CustomWeaviateStore extends VectorStore {
   private tenant?: string;
 
   _vectorstoreType(): string {
-    return "weaviate";
+    return 'weaviate';
   }
 
   constructor(
     public embeddings: EmbeddingsInterface,
-    args: WeaviateLibArgs
+    args: WeaviateLibArgs,
   ) {
     super(embeddings, args);
 
     this.client = args.client;
     this.indexName = args.indexName;
-    this.textKey = args.textKey || "text";
+    this.textKey = args.textKey || 'text';
     this.queryAttrs = [this.textKey];
     this.tenant = args.tenant;
 
@@ -124,13 +117,11 @@ export class CustomWeaviateStore extends VectorStore {
             // queryAttrs need to be valid GraphQL Names
             const keyIsValid = /^[_A-Za-z][_0-9A-Za-z]*$/.test(k);
             if (!keyIsValid) {
-              console.warn(
-                `Skipping metadata key ${k} as it is not a valid GraphQL Name`
-              );
+              console.warn(`Skipping metadata key ${k} as it is not a valid GraphQL Name`);
             }
             return keyIsValid;
-          })
-        ])
+          }),
+        ]),
       ];
     }
   }
@@ -143,16 +134,12 @@ export class CustomWeaviateStore extends VectorStore {
    * @param options Optional parameter that can include specific IDs for the documents.
    * @returns An array of document IDs.
    */
-  async addVectors(
-    vectors: number[][],
-    documents: Document[],
-    options?: { ids?: string[] }
-  ) {
+  async addVectors(vectors: number[][], documents: Document[], options?: { ids?: string[] }) {
     const documentIds = options?.ids ?? documents.map((_) => uuid.v4());
     const batch: WeaviateObject[] = documents.map((document, index) => {
-      if (Object.hasOwn(document.metadata, "id"))
+      if (Object.hasOwn(document.metadata, 'id'))
         throw new Error(
-          "Document inserted to Weaviate vectorstore should not have `id` in their metadata."
+          'Document inserted to Weaviate vectorstore should not have `id` in their metadata.',
         );
 
       const flattenedMetadata = flattenObjectForWeaviate(document.metadata);
@@ -163,8 +150,8 @@ export class CustomWeaviateStore extends VectorStore {
         vector: vectors[index],
         properties: {
           [this.textKey]: document.pageContent,
-          ...flattenedMetadata
-        }
+          ...flattenedMetadata,
+        },
       };
     });
 
@@ -181,13 +168,13 @@ export class CustomWeaviateStore extends VectorStore {
             ...response.result.errors.error.map(
               (err) =>
                 err.message ??
-                "!! Unfortunately no error message was presented in the API response !!"
-            )
+                '!! Unfortunately no error message was presented in the API response !!',
+            ),
           );
         }
       });
       if (errorMessages.length > 0) {
-        throw new Error(errorMessages.join("\n"));
+        throw new Error(errorMessages.join('\n'));
       }
     } catch (e) {
       throw Error(`Error adding vectors: ${e}`);
@@ -207,7 +194,7 @@ export class CustomWeaviateStore extends VectorStore {
     return this.addVectors(
       await this.embeddings.embedDocuments(documents.map((d) => d.pageContent)),
       documents,
-      options
+      options,
     );
   }
 
@@ -217,18 +204,12 @@ export class CustomWeaviateStore extends VectorStore {
    * @param params Object that includes either an array of IDs or a filter for the data to be deleted.
    * @returns Promise that resolves when the deletion is complete.
    */
-  async delete(params: {
-    ids?: string[];
-    filter?: WeaviateFilter;
-  }): Promise<void> {
+  async delete(params: { ids?: string[]; filter?: WeaviateFilter }): Promise<void> {
     const { ids, filter } = params;
 
     if (ids && ids.length > 0) {
       for (const id of ids) {
-        let deleter = this.client.data
-          .deleter()
-          .withClassName(this.indexName)
-          .withId(id);
+        let deleter = this.client.data.deleter().withClassName(this.indexName).withId(id);
 
         if (this.tenant) {
           deleter = deleter.withTenant(this.tenant);
@@ -249,7 +230,7 @@ export class CustomWeaviateStore extends VectorStore {
       await batchDeleter.do();
     } else {
       throw new Error(
-        `This method requires either "ids" or "filter" to be set in the input object`
+        `This method requires either "ids" or "filter" to be set in the input object`,
       );
     }
   }
@@ -258,23 +239,19 @@ export class CustomWeaviateStore extends VectorStore {
     query: string,
     k = 4,
     filter: WeaviateFilter | undefined,
-    _callbacks = undefined // implement passing to embedQuery later
+    _callbacks = undefined, // implement passing to embedQuery later
   ) {
     let embedding = query ? await this.embeddings.embedQuery(query) : [];
-    const results = await this.similaritySearchVectorWithScore(
-      embedding,
-      k,
-      filter
-    );
+    const results = await this.similaritySearchVectorWithScore(embedding, k, filter);
     return results.map((result) => {
       const object = {
         distance: result[1],
-        subject: result[0].pageContent // Whatever's in the text key isn't duplicated in the metadata, so we have to add it back
+        subject: result[0].pageContent, // Whatever's in the text key isn't duplicated in the metadata, so we have to add it back
       };
       Object.assign(object, result[0].metadata);
       return new Document({
-        pageContent: "",
-        metadata: object
+        pageContent: '',
+        metadata: object,
       });
     });
   }
@@ -291,14 +268,14 @@ export class CustomWeaviateStore extends VectorStore {
   async similaritySearchVectorWithScore(
     query: number[],
     k: number,
-    filter?: WeaviateFilter
+    filter?: WeaviateFilter,
   ): Promise<[Document, number][]> {
-    const resultsWithEmbedding =
-      await this.similaritySearchVectorWithScoreAndEmbedding(query, k, filter);
-    return resultsWithEmbedding.map(([document, score, _embedding]) => [
-      document,
-      score
-    ]);
+    const resultsWithEmbedding = await this.similaritySearchVectorWithScoreAndEmbedding(
+      query,
+      k,
+      filter,
+    );
+    return resultsWithEmbedding.map(([document, score, _embedding]) => [document, score]);
   }
 
   /**
@@ -313,25 +290,22 @@ export class CustomWeaviateStore extends VectorStore {
   async similaritySearchVectorWithScoreAndEmbedding(
     query: number[],
     k: number,
-    filter?: WeaviateFilter
+    filter?: WeaviateFilter,
   ): Promise<[Document, number, number[]][]> {
     try {
-      let additionalFields = "id";
-      let builder = this.client.graphql
-        .get()
-        .withClassName(this.indexName)
-        .withLimit(k);
+      let additionalFields = 'id';
+      let builder = this.client.graphql.get().withClassName(this.indexName).withLimit(k);
 
       if (query.length > 0) {
-        console.log("Executing vector search");
-        additionalFields += " distance vector";
+        console.log('Executing vector search');
+        additionalFields += ' distance vector';
         builder = builder.withNearVector({
           vector: query,
-          distance: filter?.distance
+          distance: filter?.distance,
         });
       }
       builder = builder.withFields(
-        `${this.queryAttrs.join(" ")} _additional { ${additionalFields} }`
+        `${this.queryAttrs.join(' ')} _additional { ${additionalFields} }`,
       );
 
       if (this.tenant) {
@@ -351,10 +325,10 @@ export class CustomWeaviateStore extends VectorStore {
         documents.push([
           new Document({
             pageContent: text,
-            metadata: rest
+            metadata: rest,
           }),
           _additional.distance || -1,
-          _additional.vector || []
+          _additional.vector || [],
         ]);
       }
       return documents;
@@ -380,29 +354,16 @@ export class CustomWeaviateStore extends VectorStore {
    */
   override async maxMarginalRelevanceSearch(
     query: string,
-    options: MaxMarginalRelevanceSearchOptions<this["FilterType"]>,
-    _callbacks?: undefined
+    options: MaxMarginalRelevanceSearchOptions<this['FilterType']>,
+    _callbacks?: undefined,
   ): Promise<Document[]> {
     const { k, fetchK = 20, lambda = 0.5, filter } = options;
     const queryEmbedding: number[] = await this.embeddings.embedQuery(query);
     const allResults: [Document, number, number[]][] =
-      await this.similaritySearchVectorWithScoreAndEmbedding(
-        queryEmbedding,
-        fetchK,
-        filter
-      );
-    const embeddingList = allResults.map(
-      ([_doc, _score, embedding]) => embedding
-    );
-    const mmrIndexes = maximalMarginalRelevance(
-      queryEmbedding,
-      embeddingList,
-      lambda,
-      k
-    );
-    return mmrIndexes
-      .filter((idx) => idx !== -1)
-      .map((idx) => allResults[idx][0]);
+      await this.similaritySearchVectorWithScoreAndEmbedding(queryEmbedding, fetchK, filter);
+    const embeddingList = allResults.map(([_doc, _score, embedding]) => embedding);
+    const mmrIndexes = maximalMarginalRelevance(queryEmbedding, embeddingList, lambda, k);
+    return mmrIndexes.filter((idx) => idx !== -1).map((idx) => allResults[idx][0]);
   }
 
   /**
@@ -419,14 +380,14 @@ export class CustomWeaviateStore extends VectorStore {
     texts: string[],
     metadatas: object | object[],
     embeddings: EmbeddingsInterface,
-    args: WeaviateLibArgs
+    args: WeaviateLibArgs,
   ): Promise<CustomWeaviateStore> {
     const docs: Document[] = [];
     for (let i = 0; i < texts.length; i += 1) {
       const metadata = Array.isArray(metadatas) ? metadatas[i] : metadatas;
       const newDoc = new Document({
         pageContent: texts[i],
-        metadata
+        metadata,
       });
       docs.push(newDoc);
     }
@@ -444,7 +405,7 @@ export class CustomWeaviateStore extends VectorStore {
   static async fromDocuments(
     docs: Document[],
     embeddings: EmbeddingsInterface,
-    args: WeaviateLibArgs
+    args: WeaviateLibArgs,
   ): Promise<CustomWeaviateStore> {
     const instance = new this(embeddings, args);
     await instance.addDocuments(docs);
@@ -460,7 +421,7 @@ export class CustomWeaviateStore extends VectorStore {
    */
   static async fromExistingIndex(
     embeddings: EmbeddingsInterface,
-    args: WeaviateLibArgs
+    args: WeaviateLibArgs,
   ): Promise<CustomWeaviateStore> {
     return new this(embeddings, args);
   }

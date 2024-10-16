@@ -1,7 +1,7 @@
-import { StreamableValue } from "ai/rsc";
-import { ReactNode } from "react";
+import { StreamableValue } from 'ai/rsc';
+import { ReactNode } from 'react';
 
-export type ClientMessageCohortAction = "add" | "update" | "leave";
+export type ClientMessageCohortAction = 'add' | 'update' | 'leave';
 
 export interface Cohort {
   data: ImageRow[];

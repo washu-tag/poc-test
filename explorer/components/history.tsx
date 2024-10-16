@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Button } from "@mantine/core";
+import { Button } from '@mantine/core';
 
 export interface ChatHistoryItem {
   id: string;
@@ -14,19 +14,14 @@ interface ChatHistoryProps {
   swapChat: (id: string) => void;
 }
 
-const SearchHistory = ({
-  chatHistory,
-  handleReset,
-  chatId,
-  swapChat
-}: ChatHistoryProps) => {
+const SearchHistory = ({ chatHistory, handleReset, chatId, swapChat }: ChatHistoryProps) => {
   return (
     <>
       <div className="chat-history overflow-y-auto flex-grow">
         {chatHistory.map((item: ChatHistoryItem) => (
           <div
             key={item.id}
-            className={`p-2 my-2 rounded cursor-pointer ${item.id === chatId ? "bg-gray-300" : "hover:bg-gray-300"}`}
+            className={`p-2 my-2 rounded cursor-pointer ${item.id === chatId ? 'bg-gray-300' : 'hover:bg-gray-300'}`}
             onClick={() => swapChat(item.id)}
           >
             {item.text}

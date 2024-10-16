@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { ReactNode, useEffect, useState } from "react";
-import { Button } from "@mantine/core";
-import { FiDatabase } from "react-icons/fi";
-import { StreamableValue, useStreamableValue } from "ai/rsc";
-import { Markdown } from "./markdown";
+import { ReactNode, useEffect, useState } from 'react';
+import { Button } from '@mantine/core';
+import { FiDatabase } from 'react-icons/fi';
+import { StreamableValue, useStreamableValue } from 'ai/rsc';
+import { Markdown } from './markdown';
 
 export function ChartDisplay({
   charts,
   code,
   preambleStream,
   text,
-  inProgressStream
+  inProgressStream,
 }: {
   charts: ReactNode;
   code: ReactNode;
@@ -42,8 +42,7 @@ export function ChartDisplay({
           </div>
           <div className="my-2">
             <Button onClick={toggleShowCode}>
-              <FiDatabase className="mr-2" /> {showCode ? "Hide" : "Review"}{" "}
-              code
+              <FiDatabase className="mr-2" /> {showCode ? 'Hide' : 'Review'} code
             </Button>
             <div className="w-full">{showCode && code}</div>
           </div>

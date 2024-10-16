@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Modal } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+import { Modal } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 
 export function Chart({ imageSrc }: { imageSrc: string }) {
   const [opened, { open, close }] = useDisclosure(false);

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { supportedModels } from "@/lib/models";
+import { supportedModels } from '@/lib/models';
 
 export default function ModelSelect({
   model,
-  handleModelChange
+  handleModelChange,
 }: {
   model: string;
   handleModelChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
