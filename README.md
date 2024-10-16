@@ -39,6 +39,10 @@ Mocks and POC code, use with care.
     kubectl apply -f storageclass.yaml 
     rm storageclass.yaml 
     ```
+1. Label the node so CT-CLIP will run (TODO: verfiy this command works to get the node name)
+   ```
+   kubectl label nodes $(kubectl get nodes -o=jsonpath='{.items[0].metadata.name}') workload-type=model-inference
+   ```
 1. Install the charts
     ```
     cd helm/ctclip
