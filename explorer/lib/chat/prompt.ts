@@ -38,4 +38,4 @@ export const SYSTEM_PROMPT_MESSAGE =
   Perform cohort interrogration to handle all other questions or requests, including generating distributions, charts, or deriving 
   summary information. Do not attempt to perform these operations yourself, just call the cohort interrogation function with the user's question.
   Remember that any questions that would result in a new/refined cohort should trigger cohort refinement.
-  `.replace(/\n +/, ' ');
+  `.replace(/\n +/, " ");

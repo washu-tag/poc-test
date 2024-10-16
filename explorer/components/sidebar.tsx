@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Tooltip, Drawer } from '@mantine/core';
-import { IconHistory } from '@tabler/icons-react';
-import SearchHistory, { ChatHistoryItem } from './history';
-import User from './user';
+import { useState } from "react";
+import { Tooltip, Drawer } from "@mantine/core";
+import { IconHistory } from "@tabler/icons-react";
+import SearchHistory, { ChatHistoryItem } from "./history";
+import User from "./user";
 
 export function Sidebar({
   chatHistory,
   handleReset,
   chatId,
-  swapChat,
+  swapChat
 }: {
   chatHistory: ChatHistoryItem[];
   handleReset: () => void;
@@ -18,9 +18,9 @@ export function Sidebar({
   swapChat: (id: string) => void;
 }) {
   const [opened, setOpened] = useState(false);
-  const [panel, setPanel] = useState<'history' | 'user'>('history');
+  const [panel, setPanel] = useState<"history" | "user">("history");
 
-  const toggleSidebar = (panelType: 'history' | 'user') => {
+  const toggleSidebar = (panelType: "history" | "user") => {
     setOpened(!opened);
     setPanel(panelType);
   };
@@ -32,7 +32,7 @@ export function Sidebar({
           <Tooltip label="Search History" position="right" withArrow>
             <button
               className="btn dark p-2 font-extralight"
-              onClick={() => toggleSidebar('history')}
+              onClick={() => toggleSidebar("history")}
             >
               <IconHistory size={32} />
             </button>
@@ -40,7 +40,7 @@ export function Sidebar({
         </div>
         <div className="bottom-2 left-4 fixed">
           <Tooltip label="Profile" position="right" withArrow>
-            <button onClick={() => toggleSidebar('user')}>
+            <button onClick={() => toggleSidebar("user")}>
               <User size={48} />
             </button>
           </Tooltip>
@@ -52,13 +52,13 @@ export function Sidebar({
         onClose={() => setOpened(false)}
         title={
           <div className="text-xl font-semibold">
-            {panel == 'history' ? 'Search History' : 'User Profile'}
+            {panel == "history" ? "Search History" : "User Profile"}
           </div>
         }
         padding="xl"
         size="md"
       >
-        {panel == 'history' ? (
+        {panel == "history" ? (
           <SearchHistory
             chatHistory={chatHistory}
             handleReset={handleReset}
@@ -77,7 +77,7 @@ export function Sidebar({
                   <strong>Institution:</strong> Washington University
                 </p>
                 <p>
-                  <strong>Email:</strong>{' '}
+                  <strong>Email:</strong>{" "}
                   <a href="mailto:einsteina@wustl.edu">einsteina@wustl.edu</a>
                 </p>
               </div>

@@ -1,6 +1,6 @@
-import weaviate, { Property, WeaviateClass } from 'weaviate-ts-client';
-import { InputValues } from '@langchain/core/utils/types';
-import { AttributeInfo } from 'langchain/chains/query_constructor';
+import weaviate, { Property, WeaviateClass } from "weaviate-ts-client";
+import { InputValues } from "@langchain/core/utils/types";
+import { AttributeInfo } from "langchain/chains/query_constructor";
 
 interface WeaviateManagerType {
   schema: AttributeInfo[] | undefined;
@@ -36,19 +36,19 @@ class WeaviateManager implements WeaviateManagerType {
       this.examples = await makeExamples(this.schema);
     }
     this.isInitialized = true;
-    console.log('Weaviate initialized');
+    console.log("Weaviate initialized");
   }
 
   public getSchema(): AttributeInfo[] {
     if (!this.schema) {
-      throw new Error('Weaviate not initialized');
+      throw new Error("Weaviate not initialized");
     }
     return this.schema;
   }
 
   public getExamples(): InputValues[] {
     if (!this.examples) {
-      throw new Error('Weaviate not initialized');
+      throw new Error("Weaviate not initialized");
     }
     return this.examples;
   }
@@ -60,138 +60,155 @@ export { weaviateManager };
 
 export const WEAVIATE_CLIENT = weaviate.client({
   scheme: `${process.env.WEAVIATE_SCHEME}`,
-  host: `${process.env.WEAVIATE_HOST}`,
+  host: `${process.env.WEAVIATE_HOST}`
 });
 
-export const COLLECTION_NAME = 'CTRATE';
+export const COLLECTION_NAME = "CTRATE";
 export const WEAVIATE_NOT_USABLE_ERROR_MESSAGE = `Weaviate is not accessible or does not have ${COLLECTION_NAME} collection`;
 
 const waitForWeaviate: (
   maxRetries?: number,
-  baseDelay?: number,
-) => Promise<WeaviateClass | undefined> = async function (maxRetries = 5, baseDelay = 10 * 1000) {
+  baseDelay?: number
+) => Promise<WeaviateClass | undefined> = async function (
+  maxRetries = 5,
+  baseDelay = 10 * 1000
+) {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       // Check if Weaviate is ready by retrieving the collection we want
-      return await WEAVIATE_CLIENT.schema.classGetter().withClassName(COLLECTION_NAME).do();
+      return await WEAVIATE_CLIENT.schema
+        .classGetter()
+        .withClassName(COLLECTION_NAME)
+        .do();
     } catch (error) {
       if (attempt === maxRetries - 1) {
-        throw Error(WEAVIATE_NOT_USABLE_ERROR_MESSAGE, {cause: error});
+        throw Error(WEAVIATE_NOT_USABLE_ERROR_MESSAGE, { cause: error });
       }
-      console.log(`Weaviate not ready, retrying... (Attempt ${attempt + 1} of ${maxRetries})`);
+      console.log(
+        `Weaviate not ready, retrying... (Attempt ${attempt + 1} of ${maxRetries})`
+      );
       // "Sleep" for delay before retrying, with exponential backoff
-      await new Promise((resolve) => setTimeout(resolve, baseDelay * Math.pow(2, attempt)));
+      await new Promise((resolve) =>
+        setTimeout(resolve, baseDelay * Math.pow(2, attempt))
+      );
     }
   }
 };
 
-const buildSchema: (collection: WeaviateClass) => Promise<AttributeInfo[] | undefined> =
-  async function (collection) {
-    return collection.properties?.map((property: Property) => {
-      const weaviate_type = property.dataType?.[0];
-      const lc_type = weaviate_type ? DATA_TYPE_MAP[weaviate_type] || 'any' : 'any';
-      let description = property.description;
-      if (weaviate_type == 'date') {
-        description +=
-          " NOTE: Only use the 'eq' operator if a specific date is requested. If the user references a range, like" +
-          " 'in 2020' or 'between 2010 and 2012', you should use a combination of gte and lt to request the date range.";
-      }
+const buildSchema: (
+  collection: WeaviateClass
+) => Promise<AttributeInfo[] | undefined> = async function (collection) {
+  return collection.properties?.map((property: Property) => {
+    const weaviate_type = property.dataType?.[0];
+    const lc_type = weaviate_type
+      ? DATA_TYPE_MAP[weaviate_type] || "any"
+      : "any";
+    let description = property.description;
+    if (weaviate_type == "date") {
+      description +=
+        " NOTE: Only use the 'eq' operator if a specific date is requested. If the user references a range, like" +
+        " 'in 2020' or 'between 2010 and 2012', you should use a combination of gte and lt to request the date range.";
+    }
 
-      return new AttributeInfo(property.name || '', lc_type, description || '');
-    });
-  };
+    return new AttributeInfo(property.name || "", lc_type, description || "");
+  });
+};
 
-const makeExamples: (schema: AttributeInfo[]) => InputValues[] = function (schema) {
+const makeExamples: (schema: AttributeInfo[]) => InputValues[] = function (
+  schema
+) {
   const dataSource = {
     content: DOC_CONTENTS,
-    attributes: schema,
+    attributes: schema
   };
-  const dataSourceMarkdown = jsonMarkdown(doubleBrackets(JSON.stringify(dataSource)));
+  const dataSourceMarkdown = jsonMarkdown(
+    doubleBrackets(JSON.stringify(dataSource))
+  );
   return [
     {
       i: 1,
       user_query:
-        'How many chest CTs showing atelectasis in men in their 30s from 2010 to 2015 can I access?',
+        "How many chest CTs showing atelectasis in men in their 30s from 2010 to 2015 can I access?",
       data_source: dataSourceMarkdown,
       structured_request: jsonMarkdown(
         doubleBrackets(
           stringifyWithFormatting({
-            query: 'abdominal CT',
+            query: "abdominal CT",
             filter:
-              'and(eq("atelectasis", true), eq("patientsex", "M"), lt("patientage", 40), gte("patientage", 30), lt("studydate", {"date":"2015-01-01", "type":"date"}), gte("studydate", {"date":"2010-01-01", "type":"date"}))',
-          }),
-        ),
-      ),
+              'and(eq("atelectasis", true), eq("patientsex", "M"), lt("patientage", 40), gte("patientage", 30), lt("studydate", {"date":"2015-01-01", "type":"date"}), gte("studydate", {"date":"2010-01-01", "type":"date"}))'
+          })
+        )
+      )
     },
     {
       i: 2,
-      user_query: 'Cohort of chest CTs from COVID-positive individuals',
+      user_query: "Cohort of chest CTs from COVID-positive individuals",
       data_source: dataSourceMarkdown,
       structured_request: jsonMarkdown(
         doubleBrackets(
           stringifyWithFormatting({
-            query: 'chest CT COVID',
-            filter: 'NO_FILTER',
-          }),
-        ),
-      ),
+            query: "chest CT COVID",
+            filter: "NO_FILTER"
+          })
+        )
+      )
     },
     {
       i: 3,
       user_query:
-        'Cohort of chest CTs that do not contain lesions or masses excluding males over 80 and philips scanners',
+        "Cohort of chest CTs that do not contain lesions or masses excluding males over 80 and philips scanners",
       data_source: dataSourceMarkdown,
       structured_request: jsonMarkdown(
         doubleBrackets(
           stringifyWithFormatting({
-            query: 'chest CT without lesions or masses',
+            query: "chest CT without lesions or masses",
             filter:
-              'and(or(eq("patientsex", "F"), lte("patientage", 80)), ne("manufacturer", "Philips"))',
-          }),
-        ),
-      ),
+              'and(or(eq("patientsex", "F"), lte("patientage", 80)), ne("manufacturer", "Philips"))'
+          })
+        )
+      )
     },
     {
       i: 4,
       user_query:
-        'Cohort of abdominal CTs showing hiatal_hernia in men in their 30s in 2020 without esophageal cancer',
+        "Cohort of abdominal CTs showing hiatal_hernia in men in their 30s in 2020 without esophageal cancer",
       data_source: dataSourceMarkdown,
       structured_request: jsonMarkdown(
         doubleBrackets(
           stringifyWithFormatting({
-            query: 'abdominal CT without esophageal cancer',
+            query: "abdominal CT without esophageal cancer",
             filter:
-              'and(eq("hiatal_hernia", true), eq("patientsex", "M"), lt("patientage", 40), gte("patientage", 30), lt("studydate", {"date":"2021-01-01", "type":"date"}), gte("studydate", {"date":"2020-01-01", "type":"date"}))',
-          }),
-        ),
-      ),
+              'and(eq("hiatal_hernia", true), eq("patientsex", "M"), lt("patientage", 40), gte("patientage", 30), lt("studydate", {"date":"2021-01-01", "type":"date"}), gte("studydate", {"date":"2020-01-01", "type":"date"}))'
+          })
+        )
+      )
     },
     {
       i: 5,
-      user_query: 'Cohort of emphysema patients under 80',
+      user_query: "Cohort of emphysema patients under 80",
       data_source: dataSourceMarkdown,
       structured_request: jsonMarkdown(
         doubleBrackets(
           stringifyWithFormatting({
-            query: 'NO_QUERY',
-            filter: 'and(eq("emphysema", true), lt("patientage", 80))',
-          }),
-        ),
-      ),
+            query: "NO_QUERY",
+            filter: 'and(eq("emphysema", true), lt("patientage", 80))'
+          })
+        )
+      )
     },
     {
       i: 6,
-      user_query: 'emphysema',
+      user_query: "emphysema",
       data_source: dataSourceMarkdown,
       structured_request: jsonMarkdown(
         doubleBrackets(
           stringifyWithFormatting({
-            query: 'NO_QUERY',
-            filter: 'and(eq("emphysema", true))',
-          }),
-        ),
-      ),
-    },
+            query: "NO_QUERY",
+            filter: 'and(eq("emphysema", true))'
+          })
+        )
+      )
+    }
   ];
 };
 
@@ -200,11 +217,11 @@ export const jsonMarkdown = (input: string) => {
 };
 
 export const stringifyWithFormatting = (input: any): string => {
-  return JSON.stringify(input, null, '  ');
+  return JSON.stringify(input, null, "  ");
 };
 
 export const doubleBrackets = (input: string) => {
-  return input.replace(/([{}])/g, '$1$1');
+  return input.replace(/([{}])/g, "$1$1");
 };
 
 export const REQUEST_SCHEMA =
@@ -229,92 +246,93 @@ export const REQUEST_SCHEMA =
   - Ensure that the result is valid JSON.\n\n';
 
 export const ERROR_TEMPLATE =
-  '{generatedQuery}\n\nError:\n\n{error}\n\nPlease correct your mistake based on the error message above.\
+  "{generatedQuery}\n\nError:\n\n{error}\n\nPlease correct your mistake based on the error message above.\
   If you remove a filter comparison, you should add the attribute to the query text. Make sure to add a negation for the attribute if the user asks to exclude matches.\
   Make minimal changes to your original query, just enough to address the error.\n\n\
-  Fixed Structured Request:\n';
+  Fixed Structured Request:\n";
 
 export const DATA_TYPE_MAP: any = {
-  string: 'string',
-  text: 'string',
-  boolean: 'boolean',
-  int: 'number',
-  number: 'number',
-  'string[]': 'list[string]',
-  'number[]': 'list[number]',
-  'int[]': 'list[number]',
-  date: 'Date',
+  string: "string",
+  text: "string",
+  boolean: "boolean",
+  int: "number",
+  number: "number",
+  "string[]": "list[string]",
+  "number[]": "list[number]",
+  "int[]": "list[number]",
+  date: "Date"
 };
 
-export const DOC_CONTENTS = 'CT images with radiology reports and associated metadata';
+export const DOC_CONTENTS =
+  "CT images with radiology reports and associated metadata";
 
 export const ATTRIBUTES = [
-  'subject',
-  'study',
-  'volumename',
-  'manufacturer',
-  'seriesdescription',
-  'manufacturermodelname',
-  'patientsex',
-  'patientage',
-  'reconstructiondiameter',
-  'distancesourcetodetector',
-  'distancesourcetopatient',
-  'gantrydetectortilt',
-  'tableheight',
-  'rotationdirection',
-  'exposuretime',
-  'xraytubecurrent',
-  'exposure',
-  'filtertype',
-  'generatorpower',
-  'focalspots',
-  'convolutionkernel',
-  'patientposition',
-  'revolutiontime',
-  'singlecollimationwidth',
-  'totalcollimationwidth',
-  'tablespeed',
-  'tablefeedperrotation',
-  'spiralpitchfactor',
-  'datacollectioncenterpatient',
-  'reconstructiontargetcenterpatient',
-  'exposuremodulationtype',
-  'ctdivol',
-  'imagepositionpatient',
-  'imageorientationpatient',
-  'slicelocation',
-  'samplesperpixel',
-  'photometricinterpretation',
-  'rows',
-  'columns',
-  'xyspacing',
-  'rescaleintercept',
-  'rescaleslope',
-  'rescaletype',
-  'numberofslices',
-  'zspacing',
-  'studydate',
-  'medical_material',
-  'arterial_wall_calcification',
-  'cardiomegaly',
-  'pericardial_effusion',
-  'coronary_artery_wall_calcification',
-  'hiatal_hernia',
-  'lymphadenopathy',
-  'emphysema',
-  'atelectasis',
-  'lung_nodule',
-  'lung_opacity',
-  'pulmonary_fibrotic_sequela',
-  'pleural_effusion',
-  'mosaic_attenuation_pattern',
-  'peribronchial_thickening',
-  'consolidation',
-  'bronchiectasis',
-  'interlobular_septal_thickening',
-  'clinicalinformation_en',
-  'technique_en',
-  'findings_en',
-  'impressions_en',
+  "subject",
+  "study",
+  "volumename",
+  "manufacturer",
+  "seriesdescription",
+  "manufacturermodelname",
+  "patientsex",
+  "patientage",
+  "reconstructiondiameter",
+  "distancesourcetodetector",
+  "distancesourcetopatient",
+  "gantrydetectortilt",
+  "tableheight",
+  "rotationdirection",
+  "exposuretime",
+  "xraytubecurrent",
+  "exposure",
+  "filtertype",
+  "generatorpower",
+  "focalspots",
+  "convolutionkernel",
+  "patientposition",
+  "revolutiontime",
+  "singlecollimationwidth",
+  "totalcollimationwidth",
+  "tablespeed",
+  "tablefeedperrotation",
+  "spiralpitchfactor",
+  "datacollectioncenterpatient",
+  "reconstructiontargetcenterpatient",
+  "exposuremodulationtype",
+  "ctdivol",
+  "imagepositionpatient",
+  "imageorientationpatient",
+  "slicelocation",
+  "samplesperpixel",
+  "photometricinterpretation",
+  "rows",
+  "columns",
+  "xyspacing",
+  "rescaleintercept",
+  "rescaleslope",
+  "rescaletype",
+  "numberofslices",
+  "zspacing",
+  "studydate",
+  "medical_material",
+  "arterial_wall_calcification",
+  "cardiomegaly",
+  "pericardial_effusion",
+  "coronary_artery_wall_calcification",
+  "hiatal_hernia",
+  "lymphadenopathy",
+  "emphysema",
+  "atelectasis",
+  "lung_nodule",
+  "lung_opacity",
+  "pulmonary_fibrotic_sequela",
+  "pleural_effusion",
+  "mosaic_attenuation_pattern",
+  "peribronchial_thickening",
+  "consolidation",
+  "bronchiectasis",
+  "interlobular_septal_thickening",
+  "clinicalinformation_en",
+  "technique_en",
+  "findings_en",
+  "impressions_en"
 ];

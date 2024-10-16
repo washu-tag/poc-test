@@ -1,33 +1,33 @@
-import 'server-only';
+import "server-only";
 
-import { generateId } from 'ai';
+import { generateId } from "ai";
 import {
   createAI,
   createStreamableUI,
   createStreamableValue,
   getMutableAIState,
   StreamableValue,
-  streamUI,
-} from 'ai/rsc';
-import { AzureOpenAI } from 'openai';
-import { ReactNode } from 'react';
-import { buildModelInstructions } from '@/lib/vector-search';
-import { AZURE_API_VERSION, supportedModels } from '@/lib/models';
-import { z } from 'zod';
-import { AiMessage } from '@/components/message';
-import { LoadingEllipses } from '@/components/loading';
-import { DataTable } from '@/components/data-table';
-import { DbQueryDisplay } from '@/components/db-query-display';
-import { ClientMessageCohortAction, Cohort } from '@/lib/types';
-import { CohortChart } from '@/components/cohort-chart';
-import { CohortExplorerDisplay } from '@/lib/types';
-import { cohortInterrogation } from '@/lib/assistant';
-import { Markdown } from '@/components/markdown';
-import { stringifyError, tryToCloseStream } from '@/lib/utils';
-import { buildAndSaveCohort } from '../cohort-builder';
-import { ChartDisplay } from '@/components/copilot-chart-display';
-import { CodeBlock } from '@/components/code';
-import { SYSTEM_PROMPT_MESSAGE } from './prompt';
+  streamUI
+} from "ai/rsc";
+import { AzureOpenAI } from "openai";
+import { ReactNode } from "react";
+import { buildModelInstructions } from "@/lib/vector-search";
+import { AZURE_API_VERSION, supportedModels } from "@/lib/models";
+import { z } from "zod";
+import { AiMessage } from "@/components/message";
+import { LoadingEllipses } from "@/components/loading";
+import { DataTable } from "@/components/data-table";
+import { DbQueryDisplay } from "@/components/db-query-display";
+import { ClientMessageCohortAction, Cohort } from "@/lib/types";
+import { CohortChart } from "@/components/cohort-chart";
+import { CohortExplorerDisplay } from "@/lib/types";
+import { cohortInterrogation } from "@/lib/assistant";
+import { Markdown } from "@/components/markdown";
+import { stringifyError, tryToCloseStream } from "@/lib/utils";
+import { buildAndSaveCohort } from "../cohort-builder";
+import { ChartDisplay } from "@/components/copilot-chart-display";
+import { CodeBlock } from "@/components/code";
+import { SYSTEM_PROMPT_MESSAGE } from "./prompt";
 
 const DEFAULT_RESULT_LIMIT = 100000;
 const DEFAULT_MAX_DISTANCE = 1;
@@ -36,7 +36,7 @@ const COHORT_MAP: { [fileId: string]: Cohort } = {};
 const openai = new AzureOpenAI({
   apiKey: process.env.AZURE_API_KEY,
   apiVersion: AZURE_API_VERSION,
-  endpoint: `https://${process.env.AZURE_RESOURCE_NAME}.openai.azure.com`,
+  endpoint: `https://${process.env.AZURE_RESOURCE_NAME}.openai.azure.com`
 });
 
 export type AIState = {
@@ -47,7 +47,7 @@ export type AIState = {
 };
 
 export interface ServerMessage {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   fileId?: string;
   runId?: string;
@@ -55,7 +55,7 @@ export interface ServerMessage {
 
 export interface ClientMessage {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   display: ReactNode;
   cohortDisplay: CohortExplorerDisplay;
   inProgress?: StreamableValue<boolean>;
@@ -65,16 +65,16 @@ export interface ClientMessage {
 let abortController: AbortController;
 
 export async function abortConversation() {
-  'use server';
+  "use server";
   abortController.abort();
 }
 
 export async function continueConversation(
   input: string,
   model: string,
-  images: string[],
+  images: string[]
 ): Promise<ClientMessage> {
-  'use server';
+  "use server";
 
   abortController = new AbortController();
   const signal = abortController.signal;
@@ -85,7 +85,7 @@ export async function continueConversation(
   const userContent = JSON.stringify({
     text: input,
     containsImages: images.length > 0, // We needed a way to tell the AI the user passed an image without passing said image through AI, which always messes it up
-    hasCohort: !!lastCohort,
+    hasCohort: !!lastCohort
   });
 
   aiState.update({
@@ -94,32 +94,46 @@ export async function continueConversation(
     messages: [
       ...aiState.get().messages,
       {
-        role: 'user',
-        content: userContent,
-      },
-    ],
+        role: "user",
+        content: userContent
+      }
+    ]
   });
 
-  const cohortFileIdStream = createStreamableValue(lastCohortFileId ? lastCohortFileId : undefined);
+  const cohortFileIdStream = createStreamableValue(
+    lastCohortFileId ? lastCohortFileId : undefined
+  );
   const cohortTableStream = createStreamableUI(
     lastCohort ? (
-      <DataTable data={lastCohort.data} fileIdStream={cohortFileIdStream.value} />
+      <DataTable
+        data={lastCohort.data}
+        fileIdStream={cohortFileIdStream.value}
+      />
     ) : (
       <LoadingEllipses />
-    ),
+    )
   );
   const cohortChartStream = createStreamableUI(
-    lastCohort?.charts ? <CohortChart charts={lastCohort.charts} /> : <LoadingEllipses />,
+    lastCohort?.charts ? (
+      <CohortChart charts={lastCohort.charts} />
+    ) : (
+      <LoadingEllipses />
+    )
   );
   const cohortUserQueryStream = createStreamableValue(
-    lastCohort?.userQuery ? lastCohort.userQuery : undefined,
+    lastCohort?.userQuery ? lastCohort.userQuery : undefined
   );
   const cohortDbQueryStream = createStreamableUI(
-    lastCohort?.dbQuery ? <DbQueryDisplay query={lastCohort.dbQuery} /> : <LoadingEllipses />,
+    lastCohort?.dbQuery ? (
+      <DbQueryDisplay query={lastCohort.dbQuery} />
+    ) : (
+      <LoadingEllipses />
+    )
   );
 
   const aiMessageInProgressStream = createStreamableValue(true);
-  const cohortActionStream = createStreamableValue<ClientMessageCohortAction>('leave');
+  const cohortActionStream =
+    createStreamableValue<ClientMessageCohortAction>("leave");
   let textStream: undefined | ReturnType<typeof createStreamableValue<string>>;
   let textNode: undefined | React.ReactNode;
   try {
@@ -135,20 +149,23 @@ export async function continueConversation(
       messages: [
         ...aiState.get().messages,
         {
-          role: 'user',
-          content: userContent,
-        },
+          role: "user",
+          content: userContent
+        }
       ],
       text: ({ content, done, delta }) => {
         if (!textStream) {
-          textStream = createStreamableValue('');
+          textStream = createStreamableValue("");
           textNode = <Markdown textStream={textStream.value} />;
         }
 
         if (done) {
           aiState.done({
             ...aiState.get(),
-            messages: [...aiState.get().messages, { role: 'assistant', content }],
+            messages: [
+              ...aiState.get().messages,
+              { role: "assistant", content }
+            ]
           });
           tryToCloseStream(
             textStream,
@@ -157,7 +174,7 @@ export async function continueConversation(
             cohortChartStream,
             cohortUserQueryStream,
             cohortDbQueryStream,
-            cohortActionStream,
+            cohortActionStream
           );
           aiMessageInProgressStream.done(false);
         } else {
@@ -173,12 +190,14 @@ export async function continueConversation(
             userQuery: z
               .string()
               .optional()
-              .describe(`The user's text prompt for the cohort semantic search`),
+              .describe(
+                `The user's text prompt for the cohort semantic search`
+              ),
             modelInstructions: z
               .string()
               .optional()
               .describe(
-                `Any instructions or directions from the user for the model that's performing the cohort search`,
+                `Any instructions or directions from the user for the model that's performing the cohort search`
               ),
             maxDistance: z
               .number()
@@ -191,9 +210,15 @@ export async function continueConversation(
             isRefinement: z
               .boolean()
               .default(false)
-              .describe(`Is the user refining an existing cohort?`),
+              .describe(`Is the user refining an existing cohort?`)
           }),
-          generate: ({ userQuery, maxDistance, resultLimit, isRefinement, modelInstructions }) => {
+          generate: ({
+            userQuery,
+            maxDistance,
+            resultLimit,
+            isRefinement,
+            modelInstructions
+          }) => {
             if (textStream) {
               textStream.done();
             }
@@ -203,27 +228,30 @@ export async function continueConversation(
                 maxDistance,
                 resultLimit,
                 isRefinement,
-                modelInstructions,
-              }),
+                modelInstructions
+              })
             );
 
-            cohortUserQueryStream.update('');
-            cohortFileIdStream.update('');
+            cohortUserQueryStream.update("");
+            cohortFileIdStream.update("");
             cohortDbQueryStream.update(<LoadingEllipses />);
             cohortTableStream.update(<LoadingEllipses />);
             cohortChartStream.update(<LoadingEllipses />);
-            cohortActionStream.done('add');
+            cohortActionStream.done("add");
 
             const allImages = [...aiState.get().images, ...images];
 
             // Strip the default text that accompanies images
-            if (allImages.length > 0 && userQuery?.endsWith('images like this')) {
-              userQuery = '';
+            if (
+              allImages.length > 0 &&
+              userQuery?.endsWith("images like this")
+            ) {
+              userQuery = "";
             }
-            const userQueryDisplay = `${userQuery || 'similar images'} within cosine distance ${maxDistance} (max results ${resultLimit})`;
+            const userQueryDisplay = `${userQuery || "similar images"} within cosine distance ${maxDistance} (max results ${resultLimit})`;
             cohortUserQueryStream.done(userQueryDisplay);
 
-            const statusStream = createStreamableValue('Searching for cohort');
+            const statusStream = createStreamableValue("Searching for cohort");
             const copilotCohortStream = createStreamableUI(<LoadingEllipses />);
             const copilotAssistantStream = createStreamableUI();
             try {
@@ -236,7 +264,10 @@ export async function continueConversation(
                     allImages,
                     maxDistance,
                     resultLimit,
-                    buildModelInstructions(modelInstructions, lastCohort?.dbQuery),
+                    buildModelInstructions(
+                      modelInstructions,
+                      lastCohort?.dbQuery
+                    ),
                     model,
                     signal,
                     statusStream,
@@ -246,26 +277,26 @@ export async function continueConversation(
                     userQueryDisplay,
                     cohortFileIdStream,
                     aiMessageInProgressStream,
-                    cohortChartStream,
+                    cohortChartStream
                   );
                   const cohortFileId = aiMessage.fileId;
                   if (!cohortFileId) {
                     aiState.done({
                       ...aiState.get(),
                       cohortFileId,
-                      messages: [...aiState.get().messages, aiMessage],
+                      messages: [...aiState.get().messages, aiMessage]
                     });
                     cohortChartStream.done(<CohortChart />);
                     copilotAssistantStream.done();
-                    statusStream.update('completed');
+                    statusStream.update("completed");
                     return;
                   }
 
                   lastCohort = COHORT_MAP[cohortFileId];
-                  statusStream.update('Generating charts');
-                  const assistantTextStream = createStreamableValue('');
-                  const preambleTextStream = createStreamableValue('');
-                  const codeStream = createStreamableValue('');
+                  statusStream.update("Generating charts");
+                  const assistantTextStream = createStreamableValue("");
+                  const preambleTextStream = createStreamableValue("");
+                  const codeStream = createStreamableValue("");
                   const copilotChartStream = createStreamableUI();
                   copilotAssistantStream.done(
                     <ChartDisplay
@@ -274,12 +305,12 @@ export async function continueConversation(
                       code={<CodeBlock textStream={codeStream.value} />}
                       charts={copilotChartStream.value}
                       inProgressStream={aiMessageInProgressStream.value}
-                    />,
+                    />
                   );
                   await cohortInterrogation(
                     supportedModels[model].assistantId,
                     openai,
-                    'Generate 4 separate plots for this cohort: Age, Sex, Manufacturer, and Presence of Medical Conditions',
+                    "Generate 4 separate plots for this cohort: Age, Sex, Manufacturer, and Presence of Medical Conditions",
                     cohortFileId,
                     aiState.get().threadId,
                     signal,
@@ -293,10 +324,12 @@ export async function continueConversation(
                       threadId: string | undefined,
                       runId: string | undefined,
                       charts: string[],
-                      text: string,
+                      text: string
                     ) => {
                       lastCohort.charts = [...lastCohort.charts, ...charts];
-                      cohortChartStream.done(<CohortChart charts={lastCohort.charts} />);
+                      cohortChartStream.done(
+                        <CohortChart charts={lastCohort.charts} />
+                      );
                       aiState.done({
                         ...aiState.get(),
                         threadId,
@@ -304,23 +337,23 @@ export async function continueConversation(
                         messages: [
                           ...aiState.get().messages,
                           {
-                            role: 'assistant',
+                            role: "assistant",
                             content:
                               aiMessage.content +
                               `. Called assistant API on thread ${threadId}: ${text}`,
                             runId,
-                            fileId: cohortFileId,
-                          },
-                        ],
+                            fileId: cohortFileId
+                          }
+                        ]
                       });
-                    },
+                    }
                   );
                 } catch (error: any) {
                   console.error(error);
                   const errorMessage = `Error: ${stringifyError(error)}`;
                   try {
                     copilotAssistantStream.done(errorMessage);
-                    statusStream.update('error');
+                    statusStream.update("error");
                   } catch (error: any) {
                     // This can happen if we already rendered & closed the copilotAssistantStream, and ran into an error later
                     statusStream.update(errorMessage);
@@ -332,17 +365,17 @@ export async function continueConversation(
                     cohortUserQueryStream,
                     cohortDbQueryStream,
                     copilotCohortStream,
-                    cohortActionStream,
+                    cohortActionStream
                   );
                   aiState.done({
                     ...aiState.get(),
                     messages: [
                       ...aiState.get().messages,
                       {
-                        role: 'assistant',
-                        content: error,
-                      },
-                    ],
+                        role: "assistant",
+                        content: error
+                      }
+                    ]
                   });
                 } finally {
                   statusStream.done();
@@ -364,7 +397,7 @@ export async function continueConversation(
               );
             } catch (error: any) {
               console.error(error);
-              statusStream.done('error');
+              statusStream.done("error");
               tryToCloseStream(
                 cohortTableStream,
                 cohortFileIdStream,
@@ -373,7 +406,7 @@ export async function continueConversation(
                 cohortDbQueryStream,
                 copilotCohortStream,
                 copilotAssistantStream,
-                cohortActionStream,
+                cohortActionStream
               );
               if (textStream) {
                 tryToCloseStream(textStream);
@@ -383,10 +416,10 @@ export async function continueConversation(
                 messages: [
                   ...aiState.get().messages,
                   {
-                    role: 'assistant',
-                    content: error,
-                  },
-                ],
+                    role: "assistant",
+                    content: error
+                  }
+                ]
               });
               aiMessageInProgressStream.done(false);
               return (
@@ -396,7 +429,7 @@ export async function continueConversation(
                 </AiMessage>
               );
             }
-          },
+          }
         },
         cohortInterrogation: {
           // We needed to make this its own tool, rather than just using the assistants API for the whole shebang because we
@@ -405,7 +438,7 @@ export async function continueConversation(
           description: `Answer questions about the cohort, generate plots and distributions, and offer summary information`,
           // Dummy parameter so Gemeni will work (similar to issue https://github.com/vercel/ai/issues/2103)
           parameters: z.object({
-            request: z.string().optional().describe(`The user's request`),
+            request: z.string().optional().describe(`The user's request`)
           }),
           generate: async () => {
             cohortFileIdStream.done();
@@ -414,24 +447,24 @@ export async function continueConversation(
             cohortTableStream.done();
 
             if (!textStream) {
-              textStream = createStreamableValue('');
+              textStream = createStreamableValue("");
               textNode = <Markdown textStream={textStream.value} />;
             } else {
-              textStream.append('\n');
+              textStream.append("\n");
             }
 
             if (!lastCohort) {
               textStream.done();
               cohortChartStream.done();
               aiMessageInProgressStream.done(false);
-              cohortActionStream.done('leave');
+              cohortActionStream.done("leave");
               return <AiMessage>Error: no cohort in context</AiMessage>;
             }
 
-            cohortActionStream.done('update');
-            const statusStream = createStreamableValue('Working');
+            cohortActionStream.done("update");
+            const statusStream = createStreamableValue("Working");
             const preambleTextStream = createStreamableValue();
-            const codeStream = createStreamableValue('');
+            const codeStream = createStreamableValue("");
             const copilotAssistantStream = createStreamableUI();
             (async () => {
               try {
@@ -452,10 +485,12 @@ export async function continueConversation(
                     threadId: string | undefined,
                     runId: string | undefined,
                     charts: string[],
-                    text: string,
+                    text: string
                   ) => {
                     lastCohort.charts = [...lastCohort.charts, ...charts];
-                    cohortChartStream.done(<CohortChart charts={lastCohort.charts} />);
+                    cohortChartStream.done(
+                      <CohortChart charts={lastCohort.charts} />
+                    );
                     aiState.done({
                       ...aiState.get(),
                       threadId,
@@ -463,20 +498,20 @@ export async function continueConversation(
                       messages: [
                         ...aiState.get().messages,
                         {
-                          role: 'assistant',
+                          role: "assistant",
                           content: `Called assistant API on thread ${threadId}: ${text}`,
-                          runId,
-                        },
-                      ],
+                          runId
+                        }
+                      ]
                     });
-                  },
+                  }
                 );
               } catch (error: any) {
                 console.error(error);
                 const errorMessage = `Error: ${JSON.stringify(error.response ? error.response.data : error.message)}`;
                 try {
                   copilotAssistantStream.done(errorMessage);
-                  statusStream.update('error');
+                  statusStream.update("error");
                 } catch (error: any) {
                   // This can happen if we already rendered & closed the copilotAssistantStream, and ran into an error later
                   statusStream.update(errorMessage);
@@ -486,7 +521,7 @@ export async function continueConversation(
                   preambleTextStream,
                   codeStream,
                   cohortChartStream,
-                  cohortActionStream,
+                  cohortActionStream
                 );
               } finally {
                 statusStream.done();
@@ -504,24 +539,24 @@ export async function continueConversation(
                 />
               </AiMessage>
             );
-          },
-        },
-      },
+          }
+        }
+      }
     });
 
     return {
       id: generateId(),
-      role: 'assistant',
+      role: "assistant",
       display: result.value,
       cohortDisplay: {
         table: cohortTableStream.value,
         chart: cohortChartStream.value,
         userQuery: cohortUserQueryStream.value,
         dbQuery: cohortDbQueryStream.value,
-        fileId: cohortFileIdStream.value,
+        fileId: cohortFileIdStream.value
       },
       inProgress: aiMessageInProgressStream.value,
-      cohortAction: cohortActionStream.value,
+      cohortAction: cohortActionStream.value
     };
   } catch (error: any) {
     aiMessageInProgressStream.update(false);
@@ -532,14 +567,14 @@ export async function continueConversation(
       cohortDbQueryStream,
       cohortFileIdStream,
       cohortActionStream,
-      aiMessageInProgressStream,
+      aiMessageInProgressStream
     );
     if (textStream) {
       tryToCloseStream(textStream);
     }
     return {
       id: generateId(),
-      role: 'assistant',
+      role: "assistant",
       display: (
         <AiMessage>{`Error: ${error.response ? error.response.data : error.message}`}</AiMessage>
       ),
@@ -548,10 +583,10 @@ export async function continueConversation(
         chart: cohortChartStream.value,
         userQuery: cohortUserQueryStream.value,
         dbQuery: cohortDbQueryStream.value,
-        fileId: cohortFileIdStream.value,
+        fileId: cohortFileIdStream.value
       },
       inProgress: aiMessageInProgressStream.value,
-      cohortAction: cohortActionStream.value,
+      cohortAction: cohortActionStream.value
     };
   }
 }
@@ -559,5 +594,5 @@ export async function continueConversation(
 export const AI = createAI<AIState, ClientMessage[]>({
   actions: { continueConversation, abortConversation },
   initialAIState: { messages: [], images: [] },
-  initialUIState: [],
+  initialUIState: []
 });

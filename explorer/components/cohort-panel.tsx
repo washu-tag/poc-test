@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
-import { useStreamableValue } from 'ai/rsc';
-import { FiBarChart2, FiDatabase, FiList } from 'react-icons/fi';
-import { CohortExplorerDisplay } from '@/lib/types';
+import React, { useState } from "react";
+import { useStreamableValue } from "ai/rsc";
+import { FiBarChart2, FiDatabase, FiList } from "react-icons/fi";
+import { CohortExplorerDisplay } from "@/lib/types";
 
 export function CohortPanel({ cohort }: { cohort: CohortExplorerDisplay }) {
-  const [viewMode, setViewMode] = useState<'table' | 'chart' | 'database'>('table');
+  const [viewMode, setViewMode] = useState<"table" | "chart" | "database">(
+    "table"
+  );
   const [userQuery] = useStreamableValue(cohort.userQuery);
   const [fileId] = useStreamableValue(cohort.fileId);
 
@@ -23,25 +25,31 @@ export function CohortPanel({ cohort }: { cohort: CohortExplorerDisplay }) {
         <div className="flex space-x-2">
           <button
             className={`p-2 rounded-md ${
-              viewMode === 'table' ? 'bg-blue-500 text-white' : 'bg-accent text-accent'
+              viewMode === "table"
+                ? "bg-blue-500 text-white"
+                : "bg-accent text-accent"
             }`}
-            onClick={() => setViewMode('table')}
+            onClick={() => setViewMode("table")}
           >
             <FiList size={20} />
           </button>
           <button
             className={`p-2 rounded-md ${
-              viewMode === 'chart' ? 'bg-blue-500 text-white' : 'bg-accent text-accent'
+              viewMode === "chart"
+                ? "bg-blue-500 text-white"
+                : "bg-accent text-accent"
             }`}
-            onClick={() => setViewMode('chart')}
+            onClick={() => setViewMode("chart")}
           >
             <FiBarChart2 size={20} />
           </button>
           <button
             className={`p-2 rounded-md ${
-              viewMode === 'database' ? 'bg-blue-500 text-white' : 'bg-accent text-accent'
+              viewMode === "database"
+                ? "bg-blue-500 text-white"
+                : "bg-accent text-accent"
             }`}
-            onClick={() => setViewMode('database')}
+            onClick={() => setViewMode("database")}
           >
             <FiDatabase size={20} />
           </button>
@@ -49,11 +57,11 @@ export function CohortPanel({ cohort }: { cohort: CohortExplorerDisplay }) {
       </div>
 
       <div className="bg-accent p-4 rounded-lg">
-        {viewMode === 'table' ? (
+        {viewMode === "table" ? (
           cohort?.table
-        ) : viewMode === 'chart' ? (
+        ) : viewMode === "chart" ? (
           cohort?.chart
-        ) : viewMode === 'database' ? (
+        ) : viewMode === "database" ? (
           cohort?.dbQuery
         ) : (
           <div>Invalid view mode</div>

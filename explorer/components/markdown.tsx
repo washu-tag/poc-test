@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import ReactMarkdown from 'react-markdown';
-import remarkParse from 'remark-parse';
-import remarkRehype from 'remark-rehype';
-import rehypeRaw from 'rehype-raw';
-import rehypeSanitize from 'rehype-sanitize';
-import rehypeStringify from 'rehype-stringify';
-import remarkGfm from 'remark-gfm';
+import ReactMarkdown from "react-markdown";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
+import rehypeStringify from "rehype-stringify";
+import remarkGfm from "remark-gfm";
 
-import { StreamableValue, useStreamableValue } from 'ai/rsc';
+import { StreamableValue, useStreamableValue } from "ai/rsc";
 
 function MarkdownStream({ textStream }: { textStream?: StreamableValue }) {
   let [text] = useStreamableValue(textStream);
@@ -29,7 +29,7 @@ function MarkdownText({ text }: { text: string }) {
           [remarkRehype, { allowDangerousHtml: true }], // Converts markdown to HTML
           rehypeRaw, // Allows raw HTML
           rehypeSanitize, // Sanitizes the HTML
-          rehypeStringify, // Converts HTML to a string
+          rehypeStringify // Converts HTML to a string
         ]}
       >
         {text}
@@ -38,7 +38,13 @@ function MarkdownText({ text }: { text: string }) {
   );
 }
 
-export function Markdown({ textStream, text }: { textStream?: StreamableValue; text?: string }) {
+export function Markdown({
+  textStream,
+  text
+}: {
+  textStream?: StreamableValue;
+  text?: string;
+}) {
   if (!text) {
     return <MarkdownStream textStream={textStream} />;
   } else {

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { StreamableValue, useStreamableValue } from 'ai/rsc';
-import { LoadingEllipses } from './loading';
+import { StreamableValue, useStreamableValue } from "ai/rsc";
+import { LoadingEllipses } from "./loading";
 
 export function CodeBlock({ textStream }: { textStream?: StreamableValue }) {
   let [text] = useStreamableValue(textStream);

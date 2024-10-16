@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { CohortPanel } from './cohort-panel';
-import { Carousel, Embla } from '@mantine/carousel';
-import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
-import { CohortExplorerDisplay } from '@/lib/types';
+import React, { useEffect, useState } from "react";
+import { CohortPanel } from "./cohort-panel";
+import { Carousel, Embla } from "@mantine/carousel";
+import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import { CohortExplorerDisplay } from "@/lib/types";
 
 export function CohortExplorer({
   cohorts,
-  copilotExpanded,
+  copilotExpanded
 }: {
   cohorts: CohortExplorerDisplay[];
   copilotExpanded: boolean;
@@ -22,20 +22,22 @@ export function CohortExplorer({
     if (embla) {
       embla.reInit();
     }
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
-  }, [embla, copilotExpanded, cohorts]); 
+  }, [embla, copilotExpanded, cohorts]);
 
   return (
     <div>
       <div className="m-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Scout Data Explorer</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          Scout Data Explorer
+        </h1>
         <p className="text-gray-600 mb-6">
           {cohorts.length > 0
-            ? 'Analyze and visualize your data.'
-            : 'Use the copilot to pull in data to examine.'}
+            ? "Analyze and visualize your data."
+            : "Use the copilot to pull in data to examine."}
         </p>
       </div>
 
@@ -43,9 +45,10 @@ export function CohortExplorer({
         {cohorts.length === 0 ? (
           <div className="p-6">
             <p className="mb-4">
-              The population currently consists of the CT-RATE dataset, which comprises chest CT
-              volumes paired with corresponding radiology text reports, multi-abnormality labels,
-              and metadata. CT-RATE houses 25,692 non-contrast chest CT volumes, expanded to 50,188
+              The population currently consists of the CT-RATE dataset, which
+              comprises chest CT volumes paired with corresponding radiology
+              text reports, multi-abnormality labels, and metadata. CT-RATE
+              houses 25,692 non-contrast chest CT volumes, expanded to 50,188
               through various reconstructions, from 21,304 unique patients.
             </p>
             <p>Currently, 9,881 cases have been loaded.</p>
@@ -58,26 +61,36 @@ export function CohortExplorer({
             containScroll="trimSnaps"
             draggable={false}
             previousControlIcon={
-              <IconChevronLeft size={16} aria-label="Previous" title="Previous cohort" />
+              <IconChevronLeft
+                size={16}
+                aria-label="Previous"
+                title="Previous cohort"
+              />
             }
-            nextControlIcon={<IconChevronRight size={16} aria-label="Next" title="Next cohort" />}
+            nextControlIcon={
+              <IconChevronRight
+                size={16}
+                aria-label="Next"
+                title="Next cohort"
+              />
+            }
             classNames={{
-              root: 'relative p-6',
-              controls: 'absolute grid grid-cols-2 w-20 gap-2 top-3 right-0',
-              slide: 'w-full',
+              root: "relative p-6",
+              controls: "absolute grid grid-cols-2 w-20 gap-2 top-3 right-0",
+              slide: "w-full"
             }}
             styles={{
               controls: {
-                left: 'unset',
+                left: "unset"
               },
               control: {
-                '&[data-inactive]': {
+                "&[data-inactive]": {
                   opacity: 0.5,
-                  backgroundColor: 'gray',
-                  cursor: 'default',
-                  pointerEvents: 'none',
-                },
-              },
+                  backgroundColor: "gray",
+                  cursor: "default",
+                  pointerEvents: "none"
+                }
+              }
             }}
           >
             {cohorts.map((cohort, index) => (

@@ -1,21 +1,21 @@
-import { BaseTranslator } from 'langchain/retrievers/self_query';
-import { VectorStore } from '@langchain/core/vectorstores';
+import { BaseTranslator } from "langchain/retrievers/self_query";
+import { VectorStore } from "@langchain/core/vectorstores";
 import {
   Runnable,
   RunnableConfig,
   RunnableInterface,
-  ensureConfig,
-} from '@langchain/core/runnables';
+  ensureConfig
+} from "@langchain/core/runnables";
 import {
   CallbackManager,
   CallbackManagerForChainRun,
   Callbacks,
-  parseCallbackConfigArg,
-} from '@langchain/core/callbacks/manager';
-import { BaseMessage } from '@langchain/core/messages';
-import type { DocumentInterface } from '@langchain/core/documents';
-import { StructuredQueryOutputParser } from 'langchain/chains/query_constructor';
-import { AxiosError } from 'axios';
+  parseCallbackConfigArg
+} from "@langchain/core/callbacks/manager";
+import { BaseMessage } from "@langchain/core/messages";
+import type { DocumentInterface } from "@langchain/core/documents";
+import { StructuredQueryOutputParser } from "langchain/chains/query_constructor";
+import { AxiosError } from "axios";
 
 interface SelfQueryRetrieverWithRetryArgs<T extends VectorStore> {
   vectorStore: T;
@@ -38,8 +38,8 @@ interface SelfQueryRetrieverWithRetryArgs<T extends VectorStore> {
   verbose?: boolean;
   searchParams?: {
     k?: number;
-    filter?: T['FilterType'];
-    mergeFiltersOperator?: 'or' | 'and' | 'replace';
+    filter?: T["FilterType"];
+    mergeFiltersOperator?: "or" | "and" | "replace";
     forceDefaultFilter?: boolean;
   };
   callbacks?: Callbacks;
@@ -52,15 +52,14 @@ export interface RetrieverResult {
   dbQuery: string;
 }
 
-export class SelfQueryRetrieverWithRetry<T extends VectorStore> extends Runnable<
-  string,
-  RetrieverResult
-> {
+export class SelfQueryRetrieverWithRetry<
+  T extends VectorStore
+> extends Runnable<string, RetrieverResult> {
   static lc_name() {
-    return 'SelfQueryRetrieverWithRetry';
+    return "SelfQueryRetrieverWithRetry";
   }
   get lc_namespace() {
-    return ['custom'];
+    return ["custom"];
   }
   vectorStore: T;
   structuredQueryTranslator: BaseTranslator<T>;
@@ -82,8 +81,8 @@ export class SelfQueryRetrieverWithRetry<T extends VectorStore> extends Runnable
   verbose?: boolean;
   searchParams?: {
     k?: number;
-    filter?: T['FilterType'];
-    mergeFiltersOperator?: 'or' | 'and' | 'replace';
+    filter?: T["FilterType"];
+    mergeFiltersOperator?: "or" | "and" | "replace";
     forceDefaultFilter?: boolean;
   };
   callbacks?: Callbacks;
@@ -103,8 +102,13 @@ export class SelfQueryRetrieverWithRetry<T extends VectorStore> extends Runnable
     this.metadata = options?.metadata ?? {};
   }
 
-  async invoke(input: string, options?: RunnableConfig): Promise<RetrieverResult> {
-    const parsedConfig = ensureConfig(parseCallbackConfigArg(ensureConfig(options)));
+  async invoke(
+    input: string,
+    options?: RunnableConfig
+  ): Promise<RetrieverResult> {
+    const parsedConfig = ensureConfig(
+      parseCallbackConfigArg(ensureConfig(options))
+    );
     const callbackManager_ = await CallbackManager.configure(
       parsedConfig.callbacks,
       this.callbacks,
@@ -112,7 +116,7 @@ export class SelfQueryRetrieverWithRetry<T extends VectorStore> extends Runnable
       this.tags,
       parsedConfig.metadata,
       this.metadata,
-      { verbose: this.verbose },
+      { verbose: this.verbose }
     );
     const runManager = await callbackManager_?.handleChainStart(
       this.toJSON(),
@@ -121,7 +125,7 @@ export class SelfQueryRetrieverWithRetry<T extends VectorStore> extends Runnable
       undefined,
       undefined,
       undefined,
-      parsedConfig.runName,
+      parsedConfig.runName
     );
     try {
       const output = await this.retrieve(input, runManager);
@@ -135,13 +139,13 @@ export class SelfQueryRetrieverWithRetry<T extends VectorStore> extends Runnable
 
   async retrieve(
     query: string,
-    runManager: CallbackManagerForChainRun | undefined,
+    runManager: CallbackManagerForChainRun | undefined
   ): Promise<RetrieverResult> {
     // Retry twice to handle cases where we get a parsing error (e.g., missing a paren),
     // followed by a content error (e.g., filtering on an invalid attribute)
     const generatedQuery = await this.queryBuilder.invoke(
       { query },
-      runManager?.getChild('query_builder'),
+      runManager?.getChild("query_builder")
     );
     try {
       return await this.parseAndExecuteQuery(query, generatedQuery, runManager);
@@ -151,20 +155,25 @@ export class SelfQueryRetrieverWithRetry<T extends VectorStore> extends Runnable
         throw error;
       }
       console.error(
-        `Running ${getContentString(generatedQuery)} produced ${error}. Trying to fix the query.`,
+        `Running ${getContentString(generatedQuery)} produced ${error}. Trying to fix the query.`
       );
-      const fixedQuery = await this.buildFixedQuery(query, generatedQuery, error, runManager);
+      const fixedQuery = await this.buildFixedQuery(
+        query,
+        generatedQuery,
+        error,
+        runManager
+      );
       try {
         return await this.parseAndExecuteQuery(query, fixedQuery, runManager);
       } catch (fixedQueryError: any) {
         console.error(
-          `Running ${getContentString(fixedQuery)} produced ${fixedQueryError}. Trying to fix the query again.`,
+          `Running ${getContentString(fixedQuery)} produced ${fixedQueryError}. Trying to fix the query again.`
         );
         const refixedQuery = await this.buildFixedQuery(
           query,
           fixedQuery,
           fixedQueryError,
-          runManager,
+          runManager
         );
         return await this.parseAndExecuteQuery(query, refixedQuery, runManager);
       }
@@ -175,33 +184,35 @@ export class SelfQueryRetrieverWithRetry<T extends VectorStore> extends Runnable
     query: string,
     generatedQueryWithError: BaseMessage,
     error: any,
-    runManager: CallbackManagerForChainRun | undefined,
+    runManager: CallbackManagerForChainRun | undefined
   ): Promise<BaseMessage> {
     return await this.queryBuilderFixer.invoke(
       {
         query,
         generatedQuery: getContentString(generatedQueryWithError),
-        error: error.message.replace(/nearVector:{[^}]*},/, ''),
+        error: error.message.replace(/nearVector:{[^}]*},/, "")
       },
-      runManager?.getChild('query_builder'),
+      runManager?.getChild("query_builder")
     );
   }
 
   async parseAndExecuteQuery(
     query: string,
     generatedQuery: BaseMessage,
-    runManager?: CallbackManagerForChainRun,
+    runManager?: CallbackManagerForChainRun
   ): Promise<RetrieverResult> {
     const generatedStructuredQuery = await this.queryParser.invoke(
       generatedQuery,
-      runManager?.getChild('query_parser'),
+      runManager?.getChild("query_parser")
     );
-    const nextArg = this.structuredQueryTranslator.visitStructuredQuery(generatedStructuredQuery);
+    const nextArg = this.structuredQueryTranslator.visitStructuredQuery(
+      generatedStructuredQuery
+    );
     const filter = this.structuredQueryTranslator.mergeFilters(
       this.searchParams?.filter,
       nextArg.filter,
       this.searchParams?.mergeFiltersOperator,
-      this.searchParams?.forceDefaultFilter,
+      this.searchParams?.forceDefaultFilter
     );
     const generatedTextQuery = generatedStructuredQuery.query;
     return {
@@ -209,13 +220,15 @@ export class SelfQueryRetrieverWithRetry<T extends VectorStore> extends Runnable
         generatedTextQuery,
         this.searchParams?.k,
         filter,
-        runManager?.getChild('vectorstore'),
+        runManager?.getChild("vectorstore")
       ),
-      dbQuery: getContentString(generatedQuery),
+      dbQuery: getContentString(generatedQuery)
     };
   }
 }
 
 function getContentString(generatedQuery: BaseMessage): string {
-  return typeof generatedQuery.content === 'string' ? generatedQuery.content : '[UNKNOWN]';
+  return typeof generatedQuery.content === "string"
+    ? generatedQuery.content
+    : "[UNKNOWN]";
 }

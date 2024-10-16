@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { Carousel } from '@mantine/carousel';
-import { Chart } from './chart';
+import { Carousel } from "@mantine/carousel";
+import { Chart } from "./chart";
 
 export function CohortChart({ charts }: { charts?: string[] }) {
   return (
@@ -14,8 +14,8 @@ export function CohortChart({ charts }: { charts?: string[] }) {
           loop
           withIndicators
           classNames={{
-            indicator: 'bg-gray-400 hover:bg-gray-600',
-            indicators: 'bottom-4',
+            indicator: "bg-gray-400 hover:bg-gray-600",
+            indicators: "bottom-4"
           }}
         >
           {charts.map((chart, i) => (
