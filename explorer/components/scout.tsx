@@ -6,24 +6,13 @@ import { generateId } from 'ai';
 import { Sidebar } from '@/components/sidebar';
 import { Copilot } from '@/components/copilot';
 import { CohortExplorer } from '@/components/cohort-explorer';
-import { ClientMessage } from '@/lib/chat/actions';
+import { ClientMessage } from '@/lib/types';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { CohortExplorerDisplay } from '@/lib/types';
-import { readStreamableValue, StreamableValue } from 'ai/rsc';
+import { readStreamableValue } from 'ai/rsc';
 
 const DEFAULT_SEARCH_NAME = 'Search';
-
-async function readStreamValues(iterator: AsyncIterableIterator<any>) {
-  let result = await iterator.next(); // Get first value
-  while (!result.done) {
-    console.log('Value:', result.value); // Do something with the value
-
-    // Get the next value
-    result = await iterator.next();
-  }
-  console.log('Stream finished');
-}
 
 export default function Scout() {
   const [chatId, setChatId] = useState<string>(generateId());

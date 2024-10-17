@@ -6,11 +6,9 @@ import {
   createStreamableUI,
   createStreamableValue,
   getMutableAIState,
-  StreamableValue,
   streamUI,
 } from 'ai/rsc';
 import { AzureOpenAI } from 'openai';
-import { ReactNode } from 'react';
 import { buildModelInstructions } from '@/lib/vector-search';
 import { AZURE_API_VERSION, supportedModels } from '@/lib/models';
 import { z } from 'zod';
@@ -18,9 +16,8 @@ import { AiMessage } from '@/components/message';
 import { LoadingEllipses } from '@/components/loading';
 import { DataTable } from '@/components/data-table';
 import { DbQueryDisplay } from '@/components/db-query-display';
-import { ClientMessageCohortAction, Cohort } from '@/lib/types';
+import { AIState, ClientMessage, ClientMessageCohortAction, Cohort } from '@/lib/types';
 import { CohortChart } from '@/components/cohort-chart';
-import { CohortExplorerDisplay } from '@/lib/types';
 import { cohortInterrogation } from '@/lib/assistant';
 import { Markdown } from '@/components/markdown';
 import { stringifyError, tryToCloseStream } from '@/lib/utils';
@@ -29,38 +26,11 @@ import { ChartDisplay } from '@/components/copilot-chart-display';
 import { CodeBlock } from '@/components/code';
 import { SYSTEM_PROMPT_MESSAGE } from './prompt';
 
-const DEFAULT_RESULT_LIMIT = 100000;
-const DEFAULT_MAX_DISTANCE = 1;
+const DEFAULT_RESULT_LIMIT = 10_000;
+const MAXIMUM_RESULTS = 100_000;
+const DEFAULT_COSINE_DISTANCE = 1;
+const MAX_COSINE_DISTANCE = 2;
 const COHORT_MAP: { [fileId: string]: Cohort } = {};
-
-const openai = new AzureOpenAI({
-  apiKey: process.env.AZURE_API_KEY,
-  apiVersion: AZURE_API_VERSION,
-  endpoint: `https://${process.env.AZURE_RESOURCE_NAME}.openai.azure.com`,
-});
-
-export type AIState = {
-  images: string[];
-  messages: ServerMessage[];
-  threadId?: string;
-  cohortFileId?: string;
-};
-
-export interface ServerMessage {
-  role: 'user' | 'assistant';
-  content: string;
-  fileId?: string;
-  runId?: string;
-}
-
-export interface ClientMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  display: ReactNode;
-  cohortDisplay: CohortExplorerDisplay;
-  inProgress?: StreamableValue<boolean>;
-  cohortAction: StreamableValue<ClientMessageCohortAction>;
-}
 
 let abortController: AbortController;
 
@@ -75,6 +45,12 @@ export async function continueConversation(
   images: string[],
 ): Promise<ClientMessage> {
   'use server';
+
+  const openai = new AzureOpenAI({
+    apiKey: process.env.AZURE_API_KEY,
+    apiVersion: AZURE_API_VERSION,
+    endpoint: `https://${process.env.AZURE_RESOURCE_NAME}.openai.azure.com`,
+  });
 
   abortController = new AbortController();
   const signal = abortController.signal;
@@ -182,10 +158,12 @@ export async function continueConversation(
               ),
             maxDistance: z
               .number()
-              .default(DEFAULT_MAX_DISTANCE)
+              .max(MAX_COSINE_DISTANCE)
+              .default(DEFAULT_COSINE_DISTANCE)
               .describe(`The maximum distance for the cohort semantic search`),
             resultLimit: z
               .number()
+              .max(MAXIMUM_RESULTS)
               .default(DEFAULT_RESULT_LIMIT)
               .describe(`The maximum cohort size`),
             isRefinement: z
@@ -215,15 +193,20 @@ export async function continueConversation(
             cohortActionStream.done('add');
 
             const allImages = [...aiState.get().images, ...images];
+            const resultLimitReadable = resultLimit.toLocaleString();
 
             // Strip the default text that accompanies images
             if (allImages.length > 0 && userQuery?.endsWith('images like this')) {
               userQuery = '';
             }
-            const userQueryDisplay = `${userQuery || 'similar images'} within cosine distance ${maxDistance} (max results ${resultLimit})`;
+            const userQueryDisplay = `${userQuery || 'similar images'} within cosine distance ${maxDistance} (max results ${resultLimitReadable})`;
             cohortUserQueryStream.done(userQueryDisplay);
 
-            const statusStream = createStreamableValue('Searching for cohort');
+            let cohortSearchStatus = 'Searching for cohort';
+            if (resultLimit > DEFAULT_RESULT_LIMIT) {
+              cohortSearchStatus += `. You have requested up to ${resultLimitReadable} results, which may take a few minutes.`;
+            }
+            const statusStream = createStreamableValue(cohortSearchStatus);
             const copilotCohortStream = createStreamableUI(<LoadingEllipses />);
             const copilotAssistantStream = createStreamableUI();
             try {

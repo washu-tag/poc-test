@@ -163,7 +163,7 @@
   }
 
   .message-tool {
-    @apply text-gray-400 uppercase text-sm items-center;
+    @apply text-gray-400 uppercase text-sm;
   }
 
   .message-user {

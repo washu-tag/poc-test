@@ -1,4 +1,3 @@
-import { ClientMessage } from '@/lib/chat/actions';
 import { useEffect, useRef, useState } from 'react';
 import { FiChevronDown, FiCpu } from 'react-icons/fi';
 import Message, { EncodedImage, UserMessage } from './message';
@@ -7,6 +6,7 @@ import { readStreamableValue, StreamableValue, useActions, useUIState } from 'ai
 import ModelSelect from './model-select';
 import { ActionIcon, Tooltip } from '@mantine/core';
 import { CopilotForm } from './copilot-form';
+import { ClientMessage } from '@/lib/types';
 import { DEFAULT_MODEL } from '@/lib/models';
 
 export function Copilot({

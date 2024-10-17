@@ -35,7 +35,7 @@ export const SYSTEM_PROMPT_MESSAGE =
   userQuery = "male patients with emphysema and lung cancer scanned in 2020 and diagnosed with COVID" and 
   modelInstructions = "perform semantic search for lung cancer, don't use lung nodules as proxy".
   
-  Perform cohort interrogration to handle all other questions or requests, including generating distributions, charts, or deriving 
+  Perform cohort interrogation to handle all other questions or requests, including generating distributions, charts, or deriving 
   summary information. Do not attempt to perform these operations yourself, just call the cohort interrogation function with the user's question.
   Remember that any questions that would result in a new/refined cohort should trigger cohort refinement.
   `.replace(/\n +/, ' ');

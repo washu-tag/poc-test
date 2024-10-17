@@ -1,6 +1,29 @@
 import { StreamableValue } from 'ai/rsc';
 import { ReactNode } from 'react';
 
+export type AIState = {
+  images: string[];
+  messages: ServerMessage[];
+  threadId?: string;
+  cohortFileId?: string;
+};
+
+export interface ServerMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  fileId?: string;
+  runId?: string;
+}
+
+export interface ClientMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  display: ReactNode;
+  cohortDisplay: CohortExplorerDisplay;
+  inProgress?: StreamableValue<boolean>;
+  cohortAction: StreamableValue<ClientMessageCohortAction>;
+}
+
 export type ClientMessageCohortAction = 'add' | 'update' | 'leave';
 
 export interface Cohort {

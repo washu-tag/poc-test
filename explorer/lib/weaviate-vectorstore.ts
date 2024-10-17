@@ -1,5 +1,10 @@
 import * as uuid from 'uuid';
-import type { WeaviateClient, WeaviateObject, WhereFilter } from 'weaviate-ts-client';
+import type {
+  GraphQLGetter,
+  WeaviateClient,
+  WeaviateObject,
+  WhereFilter,
+} from 'weaviate-ts-client';
 import { MaxMarginalRelevanceSearchOptions, VectorStore } from '@langchain/core/vectorstores';
 import type { EmbeddingsInterface } from '@langchain/core/embeddings';
 import { Document } from '@langchain/core/documents';
@@ -7,6 +12,8 @@ import { maximalMarginalRelevance } from '@langchain/core/utils/math';
 
 // Copied from https://github.com/langchain-ai/langchainjs/blob/bf3db3f880286212b54c27a0db650b936a7a7148/libs/langchain-weaviate/src/vectorstores.ts
 // Modified to be able to run queries without doing a vector search
+
+const MAX_RESULTS = 10000;
 
 // Note this function is not generic, it is designed specifically for Weaviate
 // https://weaviate.io/developers/weaviate/config-refs/datatypes#introduction
@@ -294,7 +301,8 @@ export class CustomWeaviateStore extends VectorStore {
   ): Promise<[Document, number, number[]][]> {
     try {
       let additionalFields = 'id';
-      let builder = this.client.graphql.get().withClassName(this.indexName).withLimit(k);
+      const limit = Math.min(k, MAX_RESULTS);
+      let builder = this.client.graphql.get().withClassName(this.indexName).withLimit(limit);
 
       if (query.length > 0) {
         console.log('Executing vector search');
@@ -316,25 +324,41 @@ export class CustomWeaviateStore extends VectorStore {
         builder = builder.withWhere(filter.where);
       }
 
-      const result = await builder.do();
-
       const documents: [Document, number, number[]][] = [];
-      for (const data of result.data.Get[this.indexName]) {
-        const { [this.textKey]: text, _additional, ...rest }: ResultRow = data;
-
-        documents.push([
-          new Document({
-            pageContent: text,
-            metadata: rest,
-          }),
-          _additional.distance || -1,
-          _additional.vector || [],
-        ]);
+      for (let i = 0; i < k; i += limit) {
+        console.log(`Executing query with offset ${i}`);
+        builder = builder.withOffset(i);
+        const hadResults = await this.queryDatabaseAndAddToDocuments(builder, documents);
+        if (!hadResults) {
+          break;
+        }
       }
       return documents;
     } catch (e) {
       throw Error(`Error in similaritySearch ${e}`);
     }
+  }
+
+  async queryDatabaseAndAddToDocuments(
+    builder: GraphQLGetter,
+    documents: [Document<Record<string, any>>, number, number[]][],
+  ): Promise<boolean> {
+    const result = await builder.do();
+    const resultList = result.data.Get[this.indexName];
+    for (const data of resultList) {
+      const { [this.textKey]: text, _additional, ...rest }: ResultRow = data;
+
+      documents.push([
+        new Document({
+          pageContent: text,
+          metadata: rest,
+        }),
+        _additional.distance || -1,
+        _additional.vector || [],
+      ]);
+    }
+
+    return resultList.length > 0;
   }
 
   /**

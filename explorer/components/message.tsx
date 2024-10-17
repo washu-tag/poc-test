@@ -2,7 +2,7 @@
 
 import React, { ReactNode, useRef, useEffect } from 'react';
 import { FiCpu, FiUser } from 'react-icons/fi';
-import { ClientMessage } from '@/lib/chat/actions';
+import { ClientMessage } from '@/lib/types';
 import { Status } from './status';
 import { StreamableValue } from 'ai/rsc';
 
