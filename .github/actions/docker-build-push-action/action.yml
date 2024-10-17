@@ -1,0 +1,29 @@
+name: 'Docker build + push'
+description: 'Builds and deploys docker image'
+inputs:
+  subproject:
+    description: 'Subdirectory for microservice'
+    required: true
+  image-name:
+    description: 'Name for docker image'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: "Detect Image Version"
+      id: detect-version
+      run: |
+        cd ${{ inputs.subproject }}
+        if [ -f package.json ]; then
+          echo "VERSION=$(cat package.json | jq ".version" -r)" >> "$GITHUB_OUTPUT"
+        else
+          echo "Could not find a way to determine version"
+          exit 22
+        fi
+
+    - name: "Build/Push Image"
+      uses: docker/build-push-action@v6
+      with:
+        context: ${{ inputs.subproject }}
+        push: true
+        tags: ${{ ENV.REGISTRY }}/washu-tag/${{ inputs.image-name }}:${{ steps.detect-version.outputs.VERSION }}
