@@ -12,6 +12,7 @@ runs:
   steps:
     - name: "Detect Image Version"
       id: detect-version
+      shell: bash
       run: |
         cd ${{ inputs.subproject }}
         if [ -f package.json ]; then
