@@ -10,6 +10,10 @@ env:
 jobs:
   run-tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        executorId: [ 0, 1 ]
     steps:
       - uses: azure/setup-helm@v4.2.0
         id: helm
@@ -119,10 +123,7 @@ jobs:
       - name: Run tests
         run: |
           cd tests
-          ./gradlew test
-
-
-
+          ./gradlew test -DtotalNodes=${{ strategy.job-total }} -DexecutorId=${{ matrix.executorId }}
 
   lint:
     runs-on: ubuntu-latest

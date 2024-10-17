@@ -14,6 +14,12 @@ const compat = new FlatCompat({
 module.exports = tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
-  ...compat.extends("next/core-web-vitals")
+  ...compat.extends("next/core-web-vitals"),
+  {
+    rules: {
+      "react/react-in-jsx-scope": "off",
+      "react/jsx-uses-react": "off"
+    }
+  }
 );
 
