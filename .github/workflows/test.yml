@@ -28,11 +28,11 @@ jobs:
         with:
           version: 'latest'
 
-      - uses: debianmaster/actions-k3s@master
-        id: k3s
+      - name: Start a local k8s cluster
+        uses: jupyterhub/action-k3s-helm@v4
         with:
-          version: 'latest'
-
+          k3s-channel: latest
+          
       - uses: actions/checkout@v4.2.1
 
       - name: Create k8s namespaces
@@ -128,8 +128,9 @@ jobs:
         run: kubectl -n explorer get all
 
       - name: Hit the app
-        run: curl -s -o /dev/null -w "%{http_code}" http://localhost --fail-with-body
-
+        run: |
+          ip=$(kubectl -n explorer get service explorer -o=jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          curl -s -o /dev/null -w "%{http_code}" $ip --fail-with-body
       - name: Run tests
         run: |
           cd tests
