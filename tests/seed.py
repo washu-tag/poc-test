@@ -2,8 +2,14 @@ import weaviate
 import weaviate.classes.config as wc
 
 properties = [
-    wc.Property(name="subject", data_type=wc.DataType.TEXT, description="The DICOM subject label."),
-    wc.Property(name="study", data_type=wc.DataType.TEXT, description="The DICOM study label."),
+    wc.Property(
+        name="subject",
+        data_type=wc.DataType.TEXT,
+        description="The DICOM subject label.",
+    ),
+    wc.Property(
+        name="study", data_type=wc.DataType.TEXT, description="The DICOM study label."
+    ),
 ]
 
 client = weaviate.connect_to_local(port=8080, skip_init_checks=True)

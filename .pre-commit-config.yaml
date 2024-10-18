@@ -23,3 +23,8 @@ repos:
           - eslint-config-next@15.0.0-rc.1
           - next@15.0.0-rc.1
           - typescript-eslint@8.9.0
+  # Using this mirror lets us use mypyc-compiled black, which is about 2x faster
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 24.8.0
+    hooks:
+      - id: black
