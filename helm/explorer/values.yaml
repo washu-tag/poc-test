@@ -77,9 +77,9 @@ startupProbe:
   httpGet:
     path: /api/.well-known/ready
     port: 3000
-  initialDelaySeconds: 60 
+  initialDelaySeconds: 120 
   periodSeconds: 20
-  failureThreshold: 12
+  failureThreshold: 6
   successThreshold: 1
   timeoutSeconds: 3
 
