@@ -1,10 +1,21 @@
-name: Deploy test server and run tests
+name: Post-Commit Tasks
+
 on:
   push:
+
 env:
   JAVA_DIST: 'zulu'
   JAVA_VERSION: '21'
+  REGISTRY: ghcr.io
+
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - uses: pre-commit/action@v3.0.1
+
   run-tests:
     runs-on: ubuntu-latest
     strategy:
@@ -15,16 +26,20 @@ jobs:
       - uses: azure/setup-helm@v4.2.0
         id: helm
         with:
-           version: 'latest'
+          version: 'latest'
+
       - uses: debianmaster/actions-k3s@master
         id: k3s
         with:
           version: 'latest'
+
       - uses: actions/checkout@v4.2.1
+
       - name: Create k8s namespaces
         run: |
           kubectl create namespace explorer
           kubectl create namespace ctclip
+
       - name: Create storage class
         run: |
           cat>storageclass.yaml << EOF
@@ -38,7 +53,7 @@ jobs:
           EOF
           kubectl apply -f storageclass.yaml 
           rm storageclass.yaml
-          
+
       - name: Set up secrets
         run: |
           kubectl -n explorer create secret generic ai-keys \
@@ -47,6 +62,7 @@ jobs:
           --from-literal=azure-resource='resource' \
           --from-literal=azure-assistant='assistant id' \
           --from-literal=azure-assistant-mini='assistant id'
+
       - name: Deploy CTCLIP
         run: |
           cd helm/ctclip
@@ -55,6 +71,7 @@ jobs:
           #--set resources.requests.memory=24000Mi \
           #--set resources.requests.cpu=2
           cd -
+
       - name: Deploy explorer
         run: |
           cd helm/explorer
@@ -64,50 +81,113 @@ jobs:
           --set resources.requests.memory=4000Mi \
           --set resources.requests.cpu=2
           cd -
+
       - name: kubectl describe nodes
         run: kubectl describe nodes
+
       - name: kubectl get nodes
         run: kubectl get nodes
+
       - name: kubectl -n explorer get events
         run: kubectl -n explorer get events
+
       - name: kubectl -n explorer get all
         run: kubectl -n explorer get all
+
       - name: Wait for weaviate startup
         run: |
           kubectl -n explorer wait --for=condition=Ready --timeout=60s pod/weaviate-0
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-            python-version: '3.12'
+          python-version: '3.12'
+
       - name: Seed weaviate db
         run: |
           cd tests
           pip install -r requirements.txt
           python seed.py
+
       - uses: actions/setup-java@v4 # required by tests below, saving time by installing while app starts
         with:
           distribution: ${{ ENV.JAVA_DIST }}
           java-version: ${{ ENV.JAVA_VERSION }}
+
       - name: Wait for app startup
         run: |
           kubectl -n explorer wait --for=condition=available --timeout=120s deployment/explorer
           kubectl -n explorer wait --for=jsonpath='{.status.loadBalancer.ingress}' --timeout=120s service/explorer || echo "fail through"
           kubectl -n explorer get events --sort-by='.lastTimestamp'
           kubectl -n explorer describe service explorer
-          
+
       - name: kubectl -n explorer logs service/explorer
         run: kubectl -n explorer logs service/explorer
+
       - name: kubectl -n explorer get all
         run: kubectl -n explorer get all
+
       - name: Hit the app
         run: curl -s -o /dev/null -w "%{http_code}" http://localhost --fail-with-body
+
       - name: Run tests
         run: |
           cd tests
           ./gradlew test -DtotalNodes=${{ strategy.job-total }} -DexecutorId=${{ matrix.executorId }}
-  lint:
+
+  analyze:
+    name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: java-kotlin
+            build-mode: none
+          - language: javascript-typescript
+            build-mode: none
+          - language: python
+            build-mode: none
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
-      - uses: pre-commit/action@v3.0.1
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
+
+  build-push-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    needs: [run-tests, analyze]
+    steps:
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@main
+
+      - name: 'Login to GitHub Container Registry'
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: ${{ ENV.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Build/Push Image - Explorer"
+        uses: ./.github/actions/docker-build-push-action
+        with:
+          subproject: explorer
+          image-name: explorer-built
