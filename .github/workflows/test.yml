@@ -114,6 +114,12 @@ jobs:
           distribution: ${{ ENV.JAVA_DIST }}
           java-version: ${{ ENV.JAVA_VERSION }}
 
+      - name: temp kubectl -n explorer logs service/explorer
+        run: kubectl -n explorer logs service/explorer
+
+      - name: temp kubectl -n explorer get all
+        run: kubectl -n explorer get all
+
       - name: Wait for app startup
         run: |
           kubectl -n explorer wait --for=condition=available --timeout=120s deployment/explorer
