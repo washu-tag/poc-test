@@ -20,13 +20,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        executorId: [ 0, 1 ]
+    #   matrix:
+    #     executorId: [ 0, 1 ]
     steps:
       - name: Start a local k8s cluster
         uses: jupyterhub/action-k3s-helm@v4
         with:
           k3s-channel: latest
+          traefik-enabled: false
           
       - uses: actions/checkout@v4.2.1
 
