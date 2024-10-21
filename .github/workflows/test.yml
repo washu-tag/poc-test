@@ -9,19 +9,19 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-#   lint:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v3
-#       - uses: actions/setup-python@v3
-#       - uses: pre-commit/action@v3.0.1
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - uses: pre-commit/action@v3.0.1
 
   run-tests:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-    #   matrix:
-    #     executorId: [ 0, 1 ]
+      matrix:
+        executorId: [ 0, 1 ]
     steps:
       - name: Start a local k8s cluster
         uses: jupyterhub/action-k3s-helm@v4
@@ -106,10 +106,10 @@ jobs:
           pip install -r requirements.txt
           python seed.py
 
-    #   - uses: actions/setup-java@v4 # required by tests below, saving time by installing while app starts
-    #     with:
-    #       distribution: ${{ ENV.JAVA_DIST }}
-    #       java-version: ${{ ENV.JAVA_VERSION }}
+      - uses: actions/setup-java@v4 # required by tests below, saving time by installing while app starts
+        with:
+          distribution: ${{ ENV.JAVA_DIST }}
+          java-version: ${{ ENV.JAVA_VERSION }}
 
       - name: Wait for app startup
         run: |
@@ -125,9 +125,6 @@ jobs:
       - name: kubectl -n explorer get all
         run: kubectl -n explorer get all
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-
       - name: Hit the app
         run: |
           curl -s -o /dev/null -w "%{http_code}" http://localhost --fail-with-body
@@ -136,27 +133,27 @@ jobs:
           cd tests
           ./gradlew test -DtotalNodes=${{ strategy.job-total }} -DexecutorId=${{ matrix.executorId }}
 
-#   build-push-images:
-#     runs-on: ubuntu-latest
-#     permissions:
-#       contents: read
-#       packages: write
-#       attestations: write
-#       id-token: write
-#     needs: [run-tests]
-#     steps:
-#       - name: 'Checkout GitHub Action'
-#         uses: actions/checkout@main
+  build-push-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    needs: [run-tests]
+    steps:
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@main
 
-#       - name: 'Login to GitHub Container Registry'
-#         uses: docker/login-action@v3.3.0
-#         with:
-#           registry: ${{ ENV.REGISTRY }}
-#           username: ${{ github.actor }}
-#           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: 'Login to GitHub Container Registry'
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: ${{ ENV.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-#       - name: "Build/Push Image - Explorer"
-#         uses: ./.github/actions/docker-build-push-action
-#         with:
-#           subproject: explorer
-#           image-name: explorer-built
+      - name: "Build/Push Image - Explorer"
+        uses: ./.github/actions/docker-build-push-action
+        with:
+          subproject: explorer
+          image-name: explorer-built
