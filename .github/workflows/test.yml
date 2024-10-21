@@ -130,8 +130,7 @@ jobs:
 
       - name: Hit the app
         run: |
-          ip=$(kubectl -n explorer get service explorer -o=jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-          curl -s -o /dev/null -w "%{http_code}" $ip --fail-with-body
+          curl -s -o /dev/null -w "%{http_code}" http://localhost --fail-with-body
       - name: Run tests
         run: |
           cd tests
