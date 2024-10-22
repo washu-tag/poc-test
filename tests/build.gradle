@@ -13,7 +13,6 @@ dependencies {
     implementation('io.rest-assured:rest-assured:5.5.0')
     implementation('com.fasterxml.jackson.core:jackson-databind:2.18.0')
     implementation('org.testng:testng:7.9.0')
-    runtimeOnly gradleApi()
 }
 
 java {
