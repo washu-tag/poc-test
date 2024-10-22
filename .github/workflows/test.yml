@@ -12,7 +12,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.2.1
       - uses: actions/setup-python@v3
       - uses: pre-commit/action@v3.0.1
 
@@ -135,10 +135,26 @@ jobs:
           ./gradlew test -DtotalNodes=${{ strategy.job-total }} -DexecutorId=${{ matrix.executorId }}
 
       - name: Upload test binary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.4.3
         with:
           name: test_binary_${{ matrix.executorId }}.bin
           path: tests/build/test-results/test/binary/results.bin
+
+  aggregate-tests:
+    runs-on: ubuntu-latest
+    needs: [run-tests]
+    steps:
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@v4.2.1
+
+      - name: 'Download test artifacts'
+        uses: actions/download-artifact@v4.1.8
+        with:
+          pattern: test_binary_*
+          path: tests/test_results
+
+      - name: debug
+        run: ls -R tests/test_results
 
   build-push-images:
     runs-on: ubuntu-latest
@@ -150,7 +166,7 @@ jobs:
     needs: [run-tests]
     steps:
       - name: 'Checkout GitHub Action'
-        uses: actions/checkout@main
+        uses: actions/checkout@v4.2.1
 
       - name: 'Login to GitHub Container Registry'
         uses: docker/login-action@v3.3.0
