@@ -153,8 +153,22 @@ jobs:
           pattern: test_binary_*
           path: tests/test_results
 
-      - name: debug
-        run: ls -R tests/test_results
+      - uses: actions/setup-java@v4
+        with:
+          distribution: ${{ ENV.JAVA_DIST }}
+          java-version: ${{ ENV.JAVA_VERSION }}
+
+      - name: Aggregate tests
+        run: |
+          cd tests
+          ./gradlew aggregateTests
+          zip -r aggregate_test_results.zip build/test-results
+
+      - name: Upload aggregated tests
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: aggregate_test_results.zip
+          path: tests/aggregate_test_results.zip
 
   build-push-images:
     runs-on: ubuntu-latest
