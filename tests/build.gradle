@@ -13,6 +13,7 @@ dependencies {
     implementation('io.rest-assured:rest-assured:5.5.0')
     implementation('com.fasterxml.jackson.core:jackson-databind:2.18.0')
     implementation('org.testng:testng:7.9.0')
+    runtimeOnly gradleApi()
 }
 
 java {
@@ -23,4 +24,10 @@ test {
     systemProperties System.getProperties()
 
     useTestNG()
+}
+
+
+tasks.register('aggregateTests', TestReport) {
+    destinationDirectory = reporting.baseDirectory.dir('allTests')
+    testResults.from(file('test_results').listFiles())
 }

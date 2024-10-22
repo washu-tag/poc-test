@@ -128,10 +128,17 @@ jobs:
       - name: Hit the app
         run: |
           curl -s -o /dev/null -w "%{http_code}" http://localhost --fail-with-body
+
       - name: Run tests
         run: |
           cd tests
           ./gradlew test -DtotalNodes=${{ strategy.job-total }} -DexecutorId=${{ matrix.executorId }}
+
+      - name: Upload test binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: test_binary_${{ matrix.executorId }}.bin
+          path: build/test-results/test/binary/results.bin
 
   build-push-images:
     runs-on: ubuntu-latest
