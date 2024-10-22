@@ -162,8 +162,7 @@ jobs:
         run: |
           cd tests
           ./gradlew aggregateTests
-          ls -R build
-          zip -r aggregate_test_results.zip build/test-results
+          zip -r aggregate_test_results.zip build/reports
 
       - name: Upload aggregated tests
         uses: actions/upload-artifact@v4.4.3
