@@ -28,3 +28,11 @@ repos:
     rev: 24.8.0
     hooks:
       - id: black
+  - repo: local
+    hooks:
+      - id: checkstyle-tests
+        name: checkstyle
+        language: system
+        verbose: true
+        pass_filenames: false
+        entry: bash -c 'cd tests && ./gradlew clean checkstyleMain checkstyleTest'

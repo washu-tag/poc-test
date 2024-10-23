@@ -1,17 +1,16 @@
 package edu.washu.tag.testcontrol;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.IntStream;
 import org.testng.IMethodInstance;
 import org.testng.IMethodInterceptor;
 import org.testng.ITestContext;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.IntStream;
-
 public class ExecutionParallelizer implements IMethodInterceptor {
 
     @Override
-    public List<IMethodInstance> intercept(List<IMethodInstance> list, ITestContext iTestContext) {
+    public List<IMethodInstance> intercept(List<IMethodInstance> list, ITestContext testContext) {
         final String totalExecutionNodesProp = System.getProperty("totalNodes");
         if (totalExecutionNodesProp == null || totalExecutionNodesProp.isEmpty()) {
             System.out.println("Executing tests on single node...");
