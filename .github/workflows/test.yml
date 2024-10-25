@@ -142,12 +142,14 @@ jobs:
 
       - name: Upload test binary
         uses: actions/upload-artifact@v4.4.3
+        if: always()
         with:
           name: test_binary_${{ matrix.executorId }}.bin
           path: tests/build/test-results/test/binary/results.bin
 
       - name: Upload test log
         uses: actions/upload-artifact@v4.4.3
+        if: always()
         with:
           name: test_executions_${{ matrix.executorId }}.json
           path: tests/build/test-results/test/test_executions_${{ matrix.executorId }}.json
@@ -182,6 +184,11 @@ jobs:
           cd tests
           ./gradlew aggregateTests aggregateLogs
           zip -r aggregate_test_results.zip build/reports
+
+      - name: Aggregate logs
+        run: |
+          cd tests
+          ./gradlew aggregateLogs
 
       - name: Upload aggregated tests
         uses: actions/upload-artifact@v4.4.3

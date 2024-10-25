@@ -22,6 +22,8 @@ public class TestResultAggregator {
         final ObjectMapper objectMapper = new ObjectMapper();
         final List<TestSuiteRepresentation> partialSuites;
 
+        System.out.println("Running test aggregator...");
+
         try(Stream<Path> stream = Files.walk(resultDirectory.toPath())) {
             partialSuites = stream
                     .filter(path -> path.toFile().isFile() && path.toFile().getName().endsWith(".json"))
