@@ -3,16 +3,20 @@ package edu.washu.tag.reporting;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.washu.tag.TestSettings;
 import groovy.lang.Tuple2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testng.*;
-import org.testng.xml.XmlSuite;
-
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testng.IReporter;
+import org.testng.IResultMap;
+import org.testng.ISuite;
+import org.testng.ISuiteResult;
+import org.testng.ITestContext;
+import org.testng.ITestResult;
+import org.testng.xml.XmlSuite;
 
 public class TestSuiteExporter implements IReporter {
 

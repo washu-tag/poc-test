@@ -1,10 +1,9 @@
 package edu.washu.tag.testcontrol;
 
+import edu.washu.tag.TestSettings;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
-
-import edu.washu.tag.TestSettings;
 import org.testng.IMethodInstance;
 import org.testng.IMethodInterceptor;
 import org.testng.ITestContext;

@@ -1,7 +1,6 @@
 package edu.washu.tag.reporting;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.List;
 import java.util.stream.Collectors;
 

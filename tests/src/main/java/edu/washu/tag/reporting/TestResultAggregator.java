@@ -1,10 +1,6 @@
 package edu.washu.tag.reporting;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,6 +8,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestResultAggregator {
 
@@ -24,7 +23,7 @@ public class TestResultAggregator {
 
         System.out.println("Running test aggregator...");
 
-        try(Stream<Path> stream = Files.walk(resultDirectory.toPath())) {
+        try (Stream<Path> stream = Files.walk(resultDirectory.toPath())) {
             partialSuites = stream
                     .filter(path -> path.toFile().isFile() && path.toFile().getName().endsWith(".json"))
                     .map(jsonFile -> {
