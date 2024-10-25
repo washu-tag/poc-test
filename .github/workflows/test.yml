@@ -152,7 +152,7 @@ jobs:
         if: always()
         with:
           name: test_executions_${{ matrix.executorId }}.json
-          path: tests/build/test-results/test/test_executions_${{ matrix.executorId }}.json
+          path: tests/build/reports/tests/test/test_executions_${{ matrix.executorId }}.json
 
   aggregate-tests:
     runs-on: ubuntu-latest
