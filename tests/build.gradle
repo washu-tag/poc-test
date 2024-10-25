@@ -23,8 +23,14 @@ java {
 test {
     systemProperties System.getProperties()
 
-    useTestNG()
-    testLogging.showStandardStreams = true
+    useTestNG() {
+        testName = 'scout_tests'
+        suiteName = testName
+    }
+
+    testLogging {
+        events "FAILED", "PASSED", "SKIPPED", "STANDARD_OUT", "STARTED"
+    }
 }
 
 checkstyle {
@@ -35,8 +41,14 @@ checkstyle {
 
 tasks.register('aggregateTests', TestReport) {
     destinationDirectory = reporting.baseDirectory.dir('allTests')
-    final File[] previousResults = file('test_results').listFiles()
-    if (previousResults != null) {
-        testResults.from(file('test_results').listFiles())
+    final File[] previousResultBinaries = file('test_result_binaries').listFiles()
+    if (previousResultBinaries != null) {
+        testResults.from(previousResultBinaries)
     }
+}
+
+tasks.register('aggregateLogs', JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'edu.washu.tag.reporting.TestResultAggregator'
+    args(file('test_results'))
 }

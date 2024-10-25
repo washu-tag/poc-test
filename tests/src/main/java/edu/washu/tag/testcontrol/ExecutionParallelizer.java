@@ -3,6 +3,8 @@ package edu.washu.tag.testcontrol;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
+
+import edu.washu.tag.TestSettings;
 import org.testng.IMethodInstance;
 import org.testng.IMethodInterceptor;
 import org.testng.ITestContext;
@@ -17,7 +19,7 @@ public class ExecutionParallelizer implements IMethodInterceptor {
             return list;
         }
         final int executorsSize = Integer.parseInt(totalExecutionNodesProp);
-        final int executorId = Integer.parseInt(System.getProperty("executorId"));
+        final int executorId = TestSettings.EXECUTOR_ID;
         System.out.println("Executing test suite as executor " + executorId);
 
         final List<? extends Class<?>> allTestClasses = list

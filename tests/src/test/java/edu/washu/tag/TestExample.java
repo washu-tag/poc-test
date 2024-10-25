@@ -15,4 +15,9 @@ public class TestExample extends BaseTestCase {
                 .statusCode(200);
     }
 
+    @Test
+    public void testThingAlso() {
+        
+    }
+
 }
