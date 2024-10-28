@@ -36,4 +36,20 @@ A few out-of-the-box hooks from [pre-commit-hooks](https://github.com/pre-commit
 
 From the hook defined in [mirrors-prettier](https://github.com/pre-commit/mirrors-prettier), *Javascript*, *Typescript*, and *CSS* are reformatted
 using [Prettier](https://prettier.io/). The configuration used for prettier is defined in [.prettierrc.json](.prettierrc.json). This code
-formatting will apply automatically to any microservices or other projects within the monorepo
+formatting will apply automatically to any microservices or other projects within the monorepo.
+
+## ESLint
+
+From the hook defined in [mirrors-eslint](https://github.com/pre-commit/mirrors-eslint), *Javascript* and *Typescript* are linted using
+[ESLint](https://eslint.org/). The configuration used for ESLint is defined in [eslint.config.cjs](eslint.config.cjs). This code
+formatting will apply automatically to any microservices or other projects within the monorepo.
+...
+
+## Black
+https://github.com/psf/black-pre-commit-mirror
+...
+
+## Checkstyle
+...
+
+
