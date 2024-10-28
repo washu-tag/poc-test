@@ -23,4 +23,17 @@ $ pre-commit run --all-files
 
 # Pre-commit configuration
 
-The configuration for the pre-commit tool is stored in [.pre-commit-config.yaml](.pre-commit-config.yaml)
+The configuration for the pre-commit tool is stored in [.pre-commit-config.yaml](.pre-commit-config.yaml). Currently, the checks are:
+
+## Default hooks
+
+A few out-of-the-box hooks from [pre-commit-hooks](https://github.com/pre-commit/pre-commit-hooks) are enabled:
+1. check-added-large-files
+1. check-merge-conflict
+1. detect-private-key
+
+## Prettier
+
+From the hook defined in [mirrors-prettier](https://github.com/pre-commit/mirrors-prettier), *Javascript*, *Typescript*, and *CSS* are reformatted
+using [Prettier](https://prettier.io/). The configuration used for prettier is defined in [.prettierrc.json](.prettierrc.json). This code
+formatting will apply automatically to any microservices or other projects within the monorepo
