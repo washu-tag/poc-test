@@ -26,4 +26,14 @@ public class TestAnotherThing extends BaseTestCase {
                 .statusCode(200);
     }
 
+    @Test
+    public void testAlwaysFail() {
+        RestAssured
+                .given()
+                .get("http://localhost")
+                .then()
+                .assertThat()
+                .statusCode(9999);
+    }   
+
 }
