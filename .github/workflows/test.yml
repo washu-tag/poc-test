@@ -185,7 +185,7 @@ jobs:
       - name: 'Download test XML'
         uses: actions/download-artifact@v4.1.8
         with:
-          pattern: TEST-*.xml
+          pattern: test_xml*.zip
           path: tests/test_xml
 
       - name: Test Summary
