@@ -192,6 +192,7 @@ jobs:
         uses: test-summary/action@v2.4
         with:
           paths: "tests/test_xml/**/TEST-*.xml"
+          show: "fail, skip"
 
       - uses: actions/setup-java@v4
         with:
