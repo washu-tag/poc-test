@@ -16,38 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React, { useEffect, createRef } from 'react';
+import React, { useEffect, createRef, useCallback, useMemo } from 'react';
 import { styled } from '@superset-ui/core';
 import { VectorSearchProps, VectorSearchStylesProps } from './types';
-
-// The following Styles component is a <div> element, which has been styled using Emotion
-// For docs, visit https://emotion.sh/docs/styled
-
-// Theming variables are provided for your use via a ThemeProvider
-// imported from @superset-ui/core. For variables available, please visit
-// https://github.com/apache-superset/superset-ui/blob/master/packages/superset-ui-core/src/style/index.ts
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Brush } from 'recharts';
 
 const Styles = styled.div<VectorSearchStylesProps>`
-  background-color: ${({ theme }) => theme.colors.secondary.light2};
-  padding: ${({ theme }) => theme.gridUnit * 4}px;
-  border-radius: ${({ theme }) => theme.gridUnit * 2}px;
-  height: ${({ height }) => height}px;
-  width: ${({ width }) => width}px;
-
-  h3 {
-    /* You can use your props to control CSS! */
-    margin-top: 0;
-    margin-bottom: ${({ theme }) => theme.gridUnit * 3}px;
-    font-size: ${({ theme, headerFontSize }) =>
-      theme.typography.sizes[headerFontSize]}px;
-    font-weight: ${({ theme, boldText }) =>
-      theme.typography.weights[boldText ? 'bold' : 'normal']};
-  }
-
-  pre {
-    height: ${({ theme, headerFontSize, height }) =>
-      height - theme.gridUnit * 12 - theme.typography.sizes[headerFontSize]}px;
-  }
+  height: ${({ height }) => height};
+  width: ${({ width }) => width};
 `;
 
 /**
@@ -61,7 +37,7 @@ const Styles = styled.div<VectorSearchStylesProps>`
 export default function VectorSearch(props: VectorSearchProps) {
   // height and width are the height and width of the DOM element as it exists in the dashboard.
   // There is also a `data` prop, which is, of course, your DATA 🎉
-  const { data, height, width } = props;
+  const { data, height, width, textQuery, maxDistance, rowLimit } = props;
 
   const rootElem = createRef<HTMLDivElement>();
 
@@ -71,19 +47,36 @@ export default function VectorSearch(props: VectorSearchProps) {
     const root = rootElem.current as HTMLElement;
     console.log('Plugin element', root);
   });
+  const chartData = useMemo(() => {
+    return data.map((d, index) => ({
+      ...d,
+      index,
+    }));
+  }, [data]);
 
   console.log('Plugin props', props);
 
   return (
-    <Styles
-      ref={rootElem}
-      boldText={props.boldText}
-      headerFontSize={props.headerFontSize}
-      height={height}
-      width={width}
-    >
-      <h3>{props.headerText}</h3>
-      <pre>${JSON.stringify(data, null, 2)}</pre>
+    <Styles ref={rootElem} height={height} width={width}>
+      <ResponsiveContainer height={height} width="80%">
+        <LineChart data={chartData}>
+          <XAxis />
+          <YAxis
+            domain={[0, 2]}
+            label={{ value: 'Cosine Distance', angle: -90, position: 'left' }}
+          />
+          <Tooltip
+            formatter={(value: string | number | (string | number)[]) =>
+              Array.isArray(value)
+                ? value.map((v) => parseFloat(v.toString()).toFixed(4)).join(', ')
+                : parseFloat(value.toString()).toFixed(4)
+            }
+            labelFormatter={(label: string | number) => `Result ${label}`}
+          />
+          <Line type="monotone" dataKey="distance" dot={false} />
+          <Brush dataKey="distance" height={30} stroke="#8884d8" />
+        </LineChart>
+      </ResponsiveContainer>
     </Styles>
   );
 }

@@ -17,10 +17,7 @@
  * under the License.
  */
 import { t, validateNonEmpty } from '@superset-ui/core';
-import {
-  ControlPanelConfig,
-  sharedControls,
-} from '@superset-ui/chart-controls';
+import { ControlPanelConfig, sharedControls } from '@superset-ui/chart-controls';
 
 const config: ControlPanelConfig = {
   /**
@@ -99,29 +96,17 @@ const config: ControlPanelConfig = {
 
   // For control input types, see: superset-frontend/src/explore/components/controls/index.js
   controlPanelSections: [
-    
     {
       label: t('Query'),
       expanded: true,
       controlSetRows: [
         [
           {
-            name: 'cols',
+            name: 'columns',
             config: {
-              ...sharedControls.groupby,
-              label: t('Columns'),
-              description: t('Columns to group by'),
-            },
-          },
-        ],
-        [
-          {
-            name: 'metrics',
-            config: {
-              ...sharedControls.metrics,
-              // it's possible to add validators to controls if
-              // certain selections/types need to be enforced
-              validators: [validateNonEmpty],
+              ...sharedControls.columns,
+              label: t('Embedding column'),
+              description: t('Column containing vector embeddings'),
             },
           },
         ],
@@ -132,56 +117,28 @@ const config: ControlPanelConfig = {
             config: sharedControls.row_limit,
           },
         ],
-      ],
-    },
-    {
-      label: t('Hello Controls!'),
-      expanded: true,
-      controlSetRows: [
         [
           {
-            name: 'header_text',
+            name: 'maxDistance',
+            config: {
+              type: 'SliderControl',
+              min: 0,
+              max: 2,
+              step: 0.1,
+              default: 0.5,
+              label: t('Maximum distance'),
+              description: t('The maximum cosine distance'),
+            },
+          },
+        ],
+        [
+          {
+            name: 'textQuery',
             config: {
               type: 'TextControl',
-              default: 'Hello, World!',
-              renderTrigger: true,
-              // ^ this makes it apply instantaneously, without triggering a "run query" button
-              label: t('Header Text'),
-              description: t('The text you want to see in the header'),
-            },
-          },
-        ],
-        [
-          {
-            name: 'bold_text',
-            config: {
-              type: 'CheckboxControl',
-              label: t('Bold Text'),
-              renderTrigger: true,
-              default: true,
-              description: t('A checkbox to make the '),
-            },
-          },
-        ],
-        [
-          {
-            name: 'header_font_size',
-            config: {
-              type: 'SelectControl',
-              label: t('Font Size'),
-              default: 'xl',
-              choices: [
-                // [value, label]
-                ['xxs', 'xx-small'],
-                ['xs', 'x-small'],
-                ['s', 'small'],
-                ['m', 'medium'],
-                ['l', 'large'],
-                ['xl', 'x-large'],
-                ['xxl', 'xx-large'],
-              ],
-              renderTrigger: true,
-              description: t('The size of your header font'),
+              label: t('Query'),
+              default: '',
+              description: t('The text to query'),
             },
           },
         ],

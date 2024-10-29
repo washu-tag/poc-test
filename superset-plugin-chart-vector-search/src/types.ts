@@ -16,29 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import {
-  QueryFormData,
-  supersetTheme,
-  TimeseriesDataRecord,
-} from '@superset-ui/core';
+import { FilterState, QueryFormData, TimeseriesDataRecord } from '@superset-ui/core';
 
 export interface VectorSearchStylesProps {
   height: number;
   width: number;
-  headerFontSize: keyof typeof supersetTheme.typography.sizes;
-  boldText: boolean;
 }
 
-interface VectorSearchCustomizeProps {
-  headerText: string;
-}
+interface VectorSearchCustomizeProps {}
 
 export type VectorSearchQueryFormData = QueryFormData &
   VectorSearchStylesProps &
-  VectorSearchCustomizeProps;
+  VectorSearchCustomizeProps & {
+    maxDistance: number;
+    rowLimit: number;
+    textQuery: string;
+  };
 
 export type VectorSearchProps = VectorSearchStylesProps &
-  VectorSearchCustomizeProps & {
+  VectorSearchCustomizeProps &
+  VectorSearchQueryFormData & {
+    filterState?: FilterState;
     data: TimeseriesDataRecord[];
     // add typing here for the props you pass in from transformProps.ts!
   };
