@@ -57,3 +57,5 @@ in the repository, which uses a gradle plugin to run [checkstyle](https://checks
 is stored in [custom_linting.xml](custom_linting.xml) within the root level of the repository so that it could be used by other Java
 projects in the future. As of this moment, adding other Java projects would require adding the same checkstyle plugin and gradle task configuration
 to the new projects, as well as adding another hook in the pre-commit [config](.pre-commit-config.yaml) to enable pre-commit formatting/linting on it.
+Additionally, unlike the previous hooks which run against only the changed files in a commit, this hook will run against the entire project.
+
