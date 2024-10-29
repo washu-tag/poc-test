@@ -32,24 +32,28 @@ A few out-of-the-box hooks from [pre-commit-hooks](https://github.com/pre-commit
 1. check-merge-conflict
 1. detect-private-key
 
-## Prettier
+## Prettier (Javascript, Typescript, CSS)
 
-From the hook defined in [mirrors-prettier](https://github.com/pre-commit/mirrors-prettier), *Javascript*, *Typescript*, and *CSS* are reformatted
+From the hook defined in [mirrors-prettier](https://github.com/pre-commit/mirrors-prettier), *Javascript*, *Typescript*, and *CSS* files are reformatted
 using [Prettier](https://prettier.io/). The configuration used for prettier is defined in [.prettierrc.json](.prettierrc.json). This code
 formatting will apply automatically to any microservices or other projects within the monorepo.
 
-## ESLint
+## ESLint (Javascript, Typescript)
 
-From the hook defined in [mirrors-eslint](https://github.com/pre-commit/mirrors-eslint), *Javascript* and *Typescript* are linted using
+From the hook defined in [mirrors-eslint](https://github.com/pre-commit/mirrors-eslint), *Javascript* and *Typescript* files are linted using
 [ESLint](https://eslint.org/). The configuration used for ESLint is defined in [eslint.config.cjs](eslint.config.cjs). This code
 formatting will apply automatically to any microservices or other projects within the monorepo.
-...
 
-## Black
-https://github.com/psf/black-pre-commit-mirror
-...
+## Black (Python)
 
-## Checkstyle
-...
+From the hook defined in [black-pre-commit-mirror]([https://github.com/pre-commit/mirrors-eslint](https://github.com/psf/black-pre-commit-mirror),
+*Python* files are linted using [Black](https://black.readthedocs.io/en/stable/). There is no configuration applied to Black, so their default
+settings will apply. This code formatting will apply automatically to any microservices or other projects within the monorepo.
 
+## Checkstyle (Java)
 
+Unfortunately, the configuration for Java code formatting and linting is less centralized. There is currently only one Java project
+in the repository, which uses a gradle plugin to run [checkstyle](https://checkstyle.sourceforge.io/). The configuration for checkstyle
+is stored in [custom_linting.xml](custom_linting.xml) within the root level of the repository so that it could be used by other Java
+projects in the future. As of this moment, adding other Java projects would require adding the same checkstyle plugin and gradle task configuration
+to the new projects, as well as adding another hook in the pre-commit [config](.pre-commit-config.yaml) to enable pre-commit formatting/linting on it.
