@@ -1,0 +1,141 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: extract-hl7-log-
+  annotations:
+    workflows.argoproj.io/description: |
+      The workflow extracts an HL7 dump log file into its component
+      HL7 messages and stores those in their own files.
+      Assumption: the log files are available in a Persistent Volume,
+      bound to a PVC in the argo namespace named "hl7-dumps".
+      workflows.argoproj.io/version: '>= 3.0.0'
+spec:
+  entrypoint: main
+  artifactGC:
+    strategy: OnWorkflowDeletion  # default Strategy set here applies to all Artifacts by default
+  arguments:
+    parameters:
+      - name: date
+        value: ""
+  volumes:
+    - name: hl7-dumps
+      persistentVolumeClaim:
+        claimName: hl7-dumps
+  templates:
+    - name: main
+      dag:
+        tasks:
+          - name: find-log
+            template: find-log
+            arguments:
+              parameters:
+                - name: date
+                  value: "{{workflow.parameters.date}}"
+          - name: split-log
+            template: split-log
+            arguments:
+              parameters:
+                - name: hl7logfilepath
+                  value: '{{tasks.find-log.outputs.result}}'
+            depends: "find-log"
+          - name: transform-to-hl7
+            template: transform-to-hl7
+            arguments:
+              parameters:
+                - name: hl7logpartpath
+                  value: '{{item}}'
+              artifacts:
+                - name: hl7logpart
+                  s3:
+                    key: "scratch/{{workflow.name}}/{{workflow.uid}}/parts/{{item}}"
+            depends: "split-log"
+            withParam: '{{tasks.split-log.outputs.result}}'
+    - name: find-log
+      inputs:
+        parameters:
+          - name: date
+      script:
+        image: busybox:latest
+        command: [sh]
+        source: |
+          set -e
+          find /mnt/hl7-dumps -type f -name '*{{inputs.parameters.date}}.log' | sed 's#/mnt/hl7-dumps/##'
+        volumeMounts:
+          - name: hl7-dumps
+            mountPath: /mnt/hl7-dumps
+    - name: split-log
+      inputs:
+        parameters:
+          - name: hl7logfilepath
+      script:
+        image: cicirello/alpine-plus-plus:3.20.3
+        command: [sh]
+        source: |
+          set -e
+          # Install jq for output JSON creation
+          apk add jq > /dev/null
+
+          # Input file relative path
+          f={{inputs.parameters.hl7logfilepath}}
+          # Create output directory
+          mkdir -p /mnt/out/$(dirname $f)
+
+          # Split file
+          csplit --digits 5 --elide-empty-files --suppress-matched --prefix /mnt/out/${f%.*}. /mnt/hl7-dumps/$f /^$'\r'/ '{*}' > /dev/null
+
+          # Output relative file paths to stdout as JSON array
+          find /mnt/out -type f | sort | sed 's#/mnt/out/##' | jq -Rcs 'split("\n") | map(select(length > 0))'
+        volumeMounts:
+          - name: hl7-dumps
+            mountPath: /mnt/hl7-dumps
+      outputs:
+        artifacts:
+          - name: hl7logparts
+            path: /mnt/out
+            archive:
+              none: { }
+            s3:
+              key: "scratch/{{workflow.name}}/{{workflow.uid}}/parts"
+    # Run on each file output by the previous step
+    - name: transform-to-hl7
+      inputs:
+        artifacts:
+          - name: hl7logpart
+            path: /mnt/in/part
+      script:
+        image: busybox:latest
+        command: [sh]
+        source: |
+          set -e
+          f=/mnt/in/part
+          outdir=/mnt/out
+
+          # Read header from file to get 18-digit timestamp
+          # Format: %Y%m%d%H%M%S%f in python strftime notation
+          timestamp=$(head -c 24 $f | tr -C -d \[:digit:\])
+
+          # Make a directory to store the file, of the format year/month/day/hour
+          tsdirectory=${timestamp:0:4}/${timestamp:4:2}/${timestamp:6:2}/${timestamp:8:2}
+          mkdir -p $outdir/$tsdirectory
+          relativefile=$tsdirectory/$timestamp.hl7
+
+          # Format the file as HL7
+          #   1. Remove two header lines
+          #   2. Remove one footer line
+          #   3. Remove <R> at the end of lines
+          #   4. Replace \n with \r (yes, this is a requirement for HL7)
+          # Write new file to timestamped directory
+          tail -n +3 $f | sed \$d | sed 's/<R>$//' | tr $'\n' $'\r' > $outdir/$relativefile
+
+          # Output relative file path as JSON
+          echo '{"hl7file": "'$relativefile'"}'
+      outputs:
+        artifacts:
+          - name: hl7
+            path: /mnt/out
+            archive:
+              none: { }
+            s3:
+              key: "hl7/"
+            artifactGC:
+              strategy: Never

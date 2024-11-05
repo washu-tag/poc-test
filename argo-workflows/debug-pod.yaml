@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debug-pod
+  namespace: workflows
+spec:
+  containers:
+  - name: debug-container
+    image: alpine:latest
+    command: ["/bin/sleep"]  # Sleep command to keep the container running
+    args: ["infinity"]  # Sleep indefinitely to prevent the container from exiting
+    volumeMounts:
+    - mountPath: /argo/secret/minio-creds
+      name: minio-creds
+      readOnly: true
+    - mountPath: /hl7-dumps
+      name: hl7-dumps
+      readOnly: false
+  volumes:
+  - name: minio-creds
+    secret:
+      defaultMode: 420
+      items:
+      - key: accessKey
+        path: accessKey
+      - key: secretKey
+        path: secretKey
+      secretName: minio-creds
+  - name: hl7-dumps
+    persistentVolumeClaim:
+      claimName: hl7-dumps
+      readOnly: false
