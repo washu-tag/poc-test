@@ -1,5 +1,7 @@
+import argparse
 import json
 import logging
+import sys
 from dataclasses import asdict, dataclass
 from typing import Literal, Optional
 
@@ -231,3 +233,32 @@ def main(extract: Extractable, hl7_file: str) -> Optional[str]:
         log.error(f"Error extracting {extract} from {hl7_file}", exc_info=e)
 
     return None
+
+
+def main_cli(argv=None) -> int:
+    """Main entry point for the CLI."""
+    if argv is None:
+        argv = sys.argv[1:]
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "what_to_extract",
+        choices=extractables,
+        help="Data to extract",
+    )
+    parser.add_argument(
+        "hl7_file",
+        help="HL7 file to extract data from",
+    )
+
+    args = parser.parse_args(argv)
+
+    output = main(args.what_to_extract, args.hl7_file)
+    if output:
+        print(output)
+        return 0
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main_cli())
