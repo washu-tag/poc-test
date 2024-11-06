@@ -21,8 +21,11 @@ classifiers = [
 ]
 requires-python = ">= 3.8"  # Lower limit is a guess
 dependencies = [
+    "deltalake",
     "hl7",
+    "pandas",
     "pydantic",
+    "s3fs",
 ]
 
 [project.scripts]
