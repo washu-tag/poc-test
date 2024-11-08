@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { getConfig } = require('@airbnb/config-babel');
 
 const config = getConfig({

@@ -16,15 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import {
-  buildQueryContext,
-  QueryFormData,
-  AdhocColumn,
-  ensureIsArray,
-  PhysicalColumn,
-  AdhocMetric,
-} from '@superset-ui/core';
-import axios from 'axios';
+import { buildQueryContext, QueryFormData, ensureIsArray, AdhocMetric } from '@superset-ui/core';
 
 /**
  * The buildQuery function is used to create an instance of QueryContext that's

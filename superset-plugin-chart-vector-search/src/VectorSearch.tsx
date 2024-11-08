@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React, { useEffect, createRef, useCallback, useMemo } from 'react';
+import React, { useEffect, createRef, useMemo } from 'react';
 import { styled } from '@superset-ui/core';
 import { VectorSearchProps, VectorSearchStylesProps } from './types';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Brush } from 'recharts';
@@ -37,7 +37,7 @@ const Styles = styled.div<VectorSearchStylesProps>`
 export default function VectorSearch(props: VectorSearchProps) {
   // height and width are the height and width of the DOM element as it exists in the dashboard.
   // There is also a `data` prop, which is, of course, your DATA 🎉
-  const { data, height, width, textQuery, maxDistance, rowLimit } = props;
+  const { data, height, width } = props;
 
   const rootElem = createRef<HTMLDivElement>();
 

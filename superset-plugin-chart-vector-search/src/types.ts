@@ -23,18 +23,14 @@ export interface VectorSearchStylesProps {
   width: number;
 }
 
-interface VectorSearchCustomizeProps {}
-
 export type VectorSearchQueryFormData = QueryFormData &
-  VectorSearchStylesProps &
-  VectorSearchCustomizeProps & {
+  VectorSearchStylesProps & {
     maxDistance: number;
     rowLimit: number;
     textQuery: string;
   };
 
 export type VectorSearchProps = VectorSearchStylesProps &
-  VectorSearchCustomizeProps &
   VectorSearchQueryFormData & {
     filterState?: FilterState;
     data: TimeseriesDataRecord[];

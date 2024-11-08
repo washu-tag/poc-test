@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { t, validateNonEmpty } from '@superset-ui/core';
+import { t } from '@superset-ui/core';
 import { ControlPanelConfig, sharedControls } from '@superset-ui/chart-controls';
 
 const config: ControlPanelConfig = {
