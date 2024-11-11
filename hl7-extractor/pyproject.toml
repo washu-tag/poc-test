@@ -24,6 +24,7 @@ dependencies = [
     "deltalake",
     "hl7",
     "pandas",
+    "pyarrow",
     "pydantic",
     "s3fs",
 ]

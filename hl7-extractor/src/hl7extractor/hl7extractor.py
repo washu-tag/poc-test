@@ -96,7 +96,7 @@ def extract_patient_identifiers(
 def extract_report_status(message: hl7.Message) -> Optional[str]:
     """Extract Report Status from OBR-25 in HL7 message,
     or fall back to OBX-11."""
-    status = extract_simple_field(message, "OBR", 25)
+    status = extract_field(message, "OBR", 25)
 
     if not status:
         status = extract_report_status_from_obx11(message)
@@ -107,9 +107,12 @@ def extract_report_status(message: hl7.Message) -> Optional[str]:
 def extract_report_status_from_obx11(message: hl7.Message) -> Optional[str]:
     """Extract Report Status from OBX-11 in HL7 message."""
     log.debug("Extracting Report Status from OBX-11")
-    obx_segments = message.segments("OBX")
+    try:
+        obx_segments = message.segments("OBX")
+    except LookupError:
+        obx_segments = None
     if not obx_segments:
-        log.warning("OBX segment not found in message")
+        log.debug("OBX segment not found in message")
         return None
 
     report_statuses = set()
@@ -133,15 +136,15 @@ def extract_report_status_from_obx11(message: hl7.Message) -> Optional[str]:
     return report_statuses.pop()
 
 
-def extract_simple_field(
-    message: hl7.Message, segment: str, field: int
+def extract_field(
+    message: hl7.Message, segment: str, field: int, repeat: int = 1, component: int = 1, subcomponent: int = 1
 ) -> Optional[str]:
     """Extract a simple field from an HL7 message."""
-    log.debug(f"Extracting {segment}-{field}")
+    log.debug(f"Extracting {segment}-{field} ({repeat}:{component}:{subcomponent})")
     try:
-        return message.extract_field(segment, 1, field, 1, 1, 1)
+        return message.extract_field(segment, 1, field, repeat, component, subcomponent)
     except LookupError:
-        log.debug(f"{segment}-{field} not found in message")
+        log.debug(f"{segment}-{field} ({repeat}:{component}:{subcomponent}) not found in message")
         return None
 
 
@@ -163,17 +166,17 @@ def extract_metadata(message: hl7.Message) -> Metadata:
     """Extract metadata from HL7 message."""
     log.debug("Extracting metadata from HL7 message")
     return Metadata(
-        report_message_datetime=extract_simple_field(message, "MSH", 7),
+        report_message_datetime=extract_field(message, "MSH", 7),
         patient_ids=extract_patient_identifiers(message),
-        patient_sex=extract_simple_field(message, "PID", 8),
-        patient_birth_datetime=extract_simple_field(message, "PID", 7),
-        study_instance_uid=extract_simple_field(message, "ZDS", 1),
-        modality=extract_simple_field(message, "OBR", 24),
+        patient_sex=extract_field(message, "PID", 8),
+        patient_birth_datetime=extract_field(message, "PID", 7),
+        study_instance_uid=extract_field(message, "ZDS", 1),
+        modality=extract_field(message, "OBR", 24),
         procedure_code=extract_procedure_code(message),
         report_status=extract_report_status(message),
-        scan_datetime=extract_simple_field(message, "OBR", 7),
-        scan_end_datetime=extract_simple_field(message, "OBR", 8),
-        report_status_change_datetime=extract_simple_field(message, "OBR", 22),
+        scan_datetime=extract_field(message, "OBR", 7),
+        scan_end_datetime=extract_field(message, "OBR", 8),
+        report_status_change_datetime=extract_field(message, "OBR", 22),
     )
 
 
@@ -196,9 +199,12 @@ def extract_and_join_reports(message: hl7.Message) -> Optional[str]:
     'This is the report text.\nAlso include this text\nin the report\nThis section has\n\nan empty line\nThis has lots of text\nin one field\non multiple lines\n\nNeat!'
     """
     log.debug("Extracting all Report Text from OBX-5")
-    obx_segments = message.segments("OBX")
+    try:
+        obx_segments = message.segments("OBX")
+    except LookupError:
+        obx_segments = None
     if not obx_segments:
-        log.warning("OBX segment not found in message")
+        log.debug("OBX segment not found in message")
         return None
 
     report_lines = []
@@ -209,7 +215,7 @@ def extract_and_join_reports(message: hl7.Message) -> Optional[str]:
         elif obx(2) in (["ST"], ["FT"]):
             report_lines.append(str(obx(5)))
         else:
-            log.warning(
+            log.debug(
                 f"Skipping OBX segment {obx(1)} with unsupported OBX-2 data type {obx(2)}"
             )
             continue
