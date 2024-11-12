@@ -26,7 +26,9 @@ class MessageData:
     pid_8_administrative_sex: Optional[str]
     pid_10_race: Optional[str]
     pid_22_ethnic_group: Optional[str]
+    orc_2_placer_order_number: Optional[str]
     obr_2_placer_order_number: Optional[str]
+    orc_3_filler_order_number: Optional[str]
     obr_3_filler_order_number: Optional[str]
     obr_4_universal_service_identifier_id: Optional[str]
     obr_4_universal_service_identifier_text: Optional[str]
@@ -54,7 +56,9 @@ def extract_data(message: hl7.Message, path: Optional[str] = None) -> MessageDat
         pid_8_administrative_sex=extract_field(message, "PID", 8),
         pid_10_race=extract_field(message, "PID", 10),
         pid_22_ethnic_group=extract_field(message, "PID", 22),
+        orc_2_placer_order_number=extract_field(message, "ORC", 2),
         obr_2_placer_order_number=extract_field(message, "OBR", 2),
+        orc_3_filler_order_number=extract_field(message, "ORC", 3),
         obr_3_filler_order_number=extract_field(message, "OBR", 3),
         obr_4_universal_service_identifier_id=extract_field(message, "OBR", 4, component=1),
         obr_4_universal_service_identifier_text=extract_field(message, "OBR", 4, component=2),
