@@ -1,0 +1,6 @@
+IMPRESSION:
+There are no prior chest radiographs for comparison.
+
+The scan shows significant evidence of %AB1%.  There is no indication of suspected %AB2%.  A clearer scan is needed to rule out inconclusive evidence of %AB3%.  No definite %AB4%.
+
+Dictated by: %INTERPRETER% Interpreter, M.D.
