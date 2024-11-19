@@ -2,8 +2,9 @@ import argparse
 import logging
 import os
 import sys
+from collections.abc import Iterator
 from dataclasses import dataclass, asdict
-from typing import Optional, Generator
+from typing import Optional
 
 import hl7
 import pandas as pd
@@ -91,7 +92,7 @@ def read_hl7_message(path: str) -> MessageData:
         log.error(str(e))
 
 
-def read_hl7_directory(directory: str, cache: Optional[set[str]] = None) -> Generator[MessageData]:
+def read_hl7_directory(directory: str, cache: Optional[set[str]] = None) -> Iterator[MessageData]:
     """Read HL7 messages from directory."""
     cache = cache or set()
     if directory in cache:
@@ -109,7 +110,7 @@ def read_hl7_directory(directory: str, cache: Optional[set[str]] = None) -> Gene
     cache.add(directory)
 
 
-def read_hl7_input(hl7input: list[str]) -> Generator[MessageData]:
+def read_hl7_input(hl7input: list[str]) -> Iterator[MessageData]:
     """Read HL7 messages from input files or directories."""
     cache = set()
     for path in hl7input:
