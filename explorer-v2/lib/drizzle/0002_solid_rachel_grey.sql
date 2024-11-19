@@ -1,0 +1,1 @@
+ALTER TABLE "Dataset" ADD COLUMN "updatedAt" timestamp DEFAULT now() NOT NULL;

@@ -16,4 +16,8 @@
         "typescript",
         "typescriptreact"
     ],
+    "cSpell.ignoreWords": [
+        "Weaviate",
+        "langchain"
+    ],
 }
