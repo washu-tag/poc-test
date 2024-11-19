@@ -191,7 +191,7 @@ def main_cli(argv=None) -> int:
     parser.add_argument(
         "hl7_input",
         help="HL7 input files or directories",
-        action="append",
+        nargs="+",
     )
 
     args = parser.parse_args(argv)
