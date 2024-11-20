@@ -129,27 +129,28 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 # Additional volumes on the output Deployment definition.
-# volumes: []
-volumes:
-  - name: ctclip-model
-    emptyDir:
-      sizeLimit: 20G
-  - name: huggingface-cache
-    emptyDir:
-      sizeLimit: 20G
+volumes: []
+# volumes:
+#   - name: ctclip-model
+#     emptyDir:
+#       sizeLimit: 20G
+#   - name: huggingface-cache
+#     emptyDir:
+#       sizeLimit: 20G
 
 # # Additional volumeMounts on the output Deployment definition.
-# volumeMounts: []
-volumeMounts:
-  - name: ctclip-model
-    mountPath: "/app/models"
-    readOnly: false
-  - name: huggingface-cache
-    mountPath: "/app/.cache/huggingface/download/models"
-    readOnly: false
+volumeMounts: []
+# volumeMounts:
+#   - name: ctclip-model
+#     mountPath: "/app/models"
+#     readOnly: false
+#   - name: huggingface-cache
+#     mountPath: "/app/.cache/huggingface/download/models"
+#     readOnly: false
 
-nodeSelector:
-  workload-type: model-inference
+nodeSelector: {}
+# nodeSelector:
+#   workload-type: model-inference
 
 tolerations: []
 
