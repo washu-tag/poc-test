@@ -1,0 +1,6 @@
+dependencies:
+- name: ctclip
+  repository: file://../ctclip
+  version: 0.1.0
+digest: sha256:3f8b50b13be94ac2d2e9861d0e0e2eb8c99df0104f829299ef866c6b1c959389
+generated: "2024-11-18T09:15:31.685886-06:00"

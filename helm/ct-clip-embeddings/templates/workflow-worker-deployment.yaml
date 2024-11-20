@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ctclipEmbeddings.workflowWorker.fullname" . }}
+  labels:
+    {{- include "ctclipEmbeddings.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.workflowWorker.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "ctclipEmbeddings.workflowWorker.fullname" . }}
+      {{- include "ctclipEmbeddings.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ include "ctclipEmbeddings.workflowWorker.fullname" . }}
+        {{- include "ctclipEmbeddings.labels" . | nindent 8 }}
+        {{- with .Values.workflowWorker.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ctclipEmbeddings.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.workflowWorker.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.workflowWorker.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: {{ .Values.workflowWorker.command }}
+          args: {{ .Values.workflowWorker.args }}
+          env:
+            {{- range .Values.env }}
+            - name: {{ .name }}
+              {{- if and (contains "ACCESS_KEY" .name) .valueFrom }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .valueFrom.secretKeyRef.name }}
+                  key: {{ .valueFrom.secretKeyRef.key }}
+                  namespace: {{ $.Release.Namespace }}
+              {{- else }}
+              value: "{{ .value }}"
+              {{- end }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.workflowWorker.resources | nindent 12 }}
+          {{- with .Values.workflowWorker.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.workflowWorker.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.workflowWorker.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.workflowWorker.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.workflowWorker.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

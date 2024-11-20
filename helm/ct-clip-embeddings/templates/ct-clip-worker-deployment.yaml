@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ctclipEmbeddings.ctclipWorker.fullname" . }}
+  labels:
+    {{- include "ctclipEmbeddings.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.ctclipWorker.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "ctclipEmbeddings.ctclipWorker.fullname" . }}
+      {{- include "ctclipEmbeddings.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ include "ctclipEmbeddings.ctclipWorker.fullname" . }}
+        {{- include "ctclipEmbeddings.labels" . | nindent 8 }}
+        {{- with .Values.ctclipWorker.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ctclipEmbeddings.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.ctclipWorker.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.ctclipWorker.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: {{ .Values.ctclipWorker.command }}
+          args: {{ .Values.ctclipWorker.args }}
+          env:
+            {{- range .Values.env }}
+            - name: {{ .name }}
+              {{- if and (contains "ACCESS_KEY" .name) .valueFrom }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .valueFrom.secretKeyRef.name }}
+                  key: {{ .valueFrom.secretKeyRef.key }}
+                  namespace: {{ $.Release.Namespace }}
+              {{- else }}
+              value: "{{ .value }}"
+              {{- end }}
+            {{- end }}
+            - name: MODEL_APP_URI
+              value: "http://{{ include "ctclip.fullname" .Subcharts.ctclip }}"
+          resources:
+            {{- toYaml .Values.ctclipWorker.resources | nindent 12 }}
+          {{- with .Values.ctclipWorker.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.ctclipWorker.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.ctclipWorker.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.ctclipWorker.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.ctclipWorker.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
