@@ -11,7 +11,7 @@ import pandas as pd
 import pyarrow.compute as pc
 from deltalake import DeltaTable, write_deltalake
 
-from hl7extractor.hl7extractor import extract_and_join_reports, extract_field, extract_report_status_from_obx11
+from hl7extractor.hl7extractor import PatientIdentifier, extract_and_join_reports, extract_field, extract_report_status_from_obx11, extract_patient_identifiers
 from hl7extractor.hl7extractor import read_hl7_message as _read_hl7_message
 
 log = logging.getLogger("hl7deltalake")
@@ -23,6 +23,7 @@ class MessageData:
     source_file: Optional[str]
     msh_7_message_timestamp: Optional[str]
     msh_10_message_control_id: Optional[str]
+    pid_3_patient_id: Optional[list[PatientIdentifier]]
     pid_7_date_time_of_birth: Optional[str]
     pid_8_administrative_sex: Optional[str]
     pid_10_race: Optional[str]
@@ -54,6 +55,7 @@ def extract_data(message: hl7.Message, path: Optional[str] = None) -> MessageDat
         source_file=path,
         msh_7_message_timestamp=extract_field(message, "MSH", 7),
         msh_10_message_control_id=extract_field(message, "MSH", 10),
+        pid_3_patient_id=extract_patient_identifiers(message),
         pid_7_date_time_of_birth=extract_field(message, "PID", 7),
         pid_8_administrative_sex=extract_field(message, "PID", 8),
         pid_10_race=extract_field(message, "PID", 10),

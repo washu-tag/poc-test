@@ -78,7 +78,7 @@ def extract_patient_identifiers(
         log.debug("PID-3 not found in PID segment")
         return None
 
-    pid3s: hl7.Field = message.segment("PID")(3)
+    pid3s: hl7.Field = pid_seg(3)
     if not pid3s:
         log.debug("PID-3 not found in PID segment")
         return None
