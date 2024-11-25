@@ -62,7 +62,7 @@ class RadReportToEmbedding:
             for message_id in message_ids
         ]
         # Wait for all embeddings to be generated
-        await asyncio.gather(*embeddings_activity_handles)
+        await workflow.wait(embeddings_activity_handles)
 
         # Save embeddings to delta lake
         workflow.logger.info("Beginning activity save_embeddings_to_delta_lake")
