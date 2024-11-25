@@ -38,6 +38,7 @@ class MessageData:
     obr_7_observation_datetime: Optional[str]
     obr_8_observation_end_datetime: Optional[str]
     obr_22_results_rpt_status_chng_datetime: Optional[str]
+    obr_24_diagnostic_serv_sect_id: Optional[str]
     obr_25_result_status: Optional[str]
     obx_5_observation_value: Optional[str]
     obx_11_observation_result_status: Optional[str]
@@ -68,6 +69,7 @@ def extract_data(message: hl7.Message, path: Optional[str] = None) -> MessageDat
         obr_7_observation_datetime=extract_field(message, "OBR", 7),
         obr_8_observation_end_datetime=extract_field(message, "OBR", 8),
         obr_22_results_rpt_status_chng_datetime=extract_field(message, "OBR", 22),
+        obr_24_diagnostic_serv_sect_id=extract_field(message, "OBR", 24),
         obr_25_result_status=extract_field(message, "OBR", 25),
         obx_5_observation_value=extract_and_join_reports(message),
         obx_11_observation_result_status=extract_report_status_from_obx11(message),
