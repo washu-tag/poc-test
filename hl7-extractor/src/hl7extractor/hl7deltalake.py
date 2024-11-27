@@ -23,6 +23,7 @@ class MessageData:
     source_file: Optional[str]
     msh_7_message_timestamp: Optional[str]
     msh_10_message_control_id: Optional[str]
+    msh_12_version_id: Optional[str]
     pid_3_patient_id: Optional[list[PatientIdentifier]]
     pid_7_date_time_of_birth: Optional[str]
     pid_8_administrative_sex: Optional[str]
@@ -55,6 +56,7 @@ def extract_data(message: hl7.Message, path: Optional[str] = None) -> MessageDat
         source_file=path,
         msh_7_message_timestamp=extract_field(message, "MSH", 7),
         msh_10_message_control_id=extract_field(message, "MSH", 10),
+        msh_12_version_id=extract_field(message, "MSH", 12),
         pid_3_patient_id=extract_patient_identifiers(message),
         pid_7_date_time_of_birth=extract_field(message, "PID", 7),
         pid_8_administrative_sex=extract_field(message, "PID", 8),
